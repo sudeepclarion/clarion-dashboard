@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-hairline;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-base-800 text-ink antialiased;
+    /* Same two-light wash as the marketing site, muted for long working sessions. */
+    background-image:
+      radial-gradient(70rem 32rem at 12% -8rem, rgba(112, 0, 255, 0.1), transparent 60%),
+      radial-gradient(56rem 28rem at 92% 0%, rgba(0, 242, 254, 0.06), transparent 60%),
+      linear-gradient(180deg, #0b0f17 0%, #090c14 60%, #07090e 100%);
+    background-attachment: fixed;
+    font-feature-settings: "cv11", "ss01";
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background: rgba(0, 242, 254, 0.26);
+    color: #f8fafc;
+  }
+
+  :focus-visible {
+    outline: 2px solid #00f2fe;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  /* Slim, unobtrusive scrollbars — dense tables scroll a lot. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2b3a52;
+    background-clip: content-box;
+  }
+}
+
+@layer components {
+  /* The one panel treatment every surface uses. */
+  .panel {
+    @apply rounded-xl border border-hairline bg-surface/70 shadow-panel backdrop-blur-sm;
+  }
+
+  .panel-raised {
+    @apply rounded-xl border border-hairline bg-surface-raised shadow-lift;
+  }
+
+  .eyebrow {
+    @apply font-mono text-2xs uppercase tracking-[0.18em] text-ink-faint;
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(100deg, #00f2fe 0%, #7000ff 55%, #00f2fe 100%);
+  }
+
+  .hairline-x {
+    background: linear-gradient(90deg, transparent, #1e293b 12%, #1e293b 88%, transparent);
+  }
+
+  /* Faint grid used behind empty states and the overview header. */
+  .grid-backdrop {
+    background-image:
+      linear-gradient(to right, rgba(30, 41, 59, 0.35) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(30, 41, 59, 0.35) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  /* Rendered Markdown (AI reports and chat replies). */
+  .prose-clarion {
+    @apply text-sm leading-relaxed text-ink-muted;
+  }
+
+  .prose-clarion h2 {
+    @apply mb-2 mt-6 text-sm font-semibold uppercase tracking-wide text-ink;
+  }
+
+  .prose-clarion h3 {
+    @apply mb-1.5 mt-5 text-sm font-semibold text-ink;
+  }
+
+  .prose-clarion h4 {
+    @apply mb-1 mt-4 text-sm font-medium text-ink;
+  }
+
+  .prose-clarion p {
+    @apply my-2;
+  }
+
+  .prose-clarion strong {
+    @apply font-semibold text-ink;
+  }
+
+  .prose-clarion ul {
+    @apply my-2 list-disc space-y-1 pl-5;
+  }
+
+  .prose-clarion code {
+    @apply rounded bg-base-900 px-1.5 py-0.5 font-mono text-2xs text-cyan-clarion;
+  }
+
+  .prose-clarion a {
+    @apply text-cyan-clarion underline decoration-cyan-clarion/30 underline-offset-2 hover:decoration-cyan-clarion;
+  }
+
+  .prose-clarion table {
+    @apply my-3 w-full border-collapse overflow-hidden rounded-lg border border-hairline text-2xs;
+  }
+
+  .prose-clarion th {
+    @apply border-b border-hairline bg-base-900/60 px-3 py-2 text-left font-semibold uppercase tracking-wide text-ink-faint;
+  }
+
+  .prose-clarion td {
+    @apply border-b border-hairline/60 px-3 py-2 align-top;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

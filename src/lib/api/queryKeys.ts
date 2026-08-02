@@ -1,0 +1,21 @@
+/** Every cache key in one place, so invalidation is never guesswork. */
+export const queryKeys = {
+  state: ["state"] as const,
+  activity: (limit: number) => ["activity", limit] as const,
+  tasks: (filter: unknown) => ["tasks", filter] as const,
+  task: (id: string) => ["task", id] as const,
+  members: ["members"] as const,
+  sprints: ["sprints"] as const,
+  standups: ["standups"] as const,
+  reports: ["reports"] as const,
+  report: (id: string) => ["report", id] as const,
+  review: (from: string, to: string) => ["review", from, to] as const,
+  clients: ["clients"] as const,
+  incidents: ["incidents"] as const,
+  chat: ["chat"] as const,
+  chatTools: ["chat", "tools"] as const,
+  capabilities: ["capabilities"] as const,
+  githubRepos: ["github", "repos"] as const,
+  githubAvailable: ["github", "available"] as const,
+  slackChannels: ["slack", "channels"] as const,
+};
