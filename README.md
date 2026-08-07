@@ -12,7 +12,7 @@ npm run dev        # http://localhost:5173 (proxies /api to the backend on :5080
 
 The dev server proxies `/api` to `http://localhost:5080` by default, so the app makes
 same-origin requests and needs no CORS handling or base URL. Point it elsewhere with
-`CLARION_API_URL`.
+`CLARION_API_URL` (dev proxy) or `VITE_CLARION_API_URL` + `VITE_CLARION_API_SECRET` in `.env`.
 
 ---
 

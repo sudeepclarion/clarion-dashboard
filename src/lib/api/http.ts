@@ -26,20 +26,32 @@ interface Envelope<T> {
   error?: { code: string; message: string };
 }
 
-const BASE = "/api";
+const API_ROOT = (import.meta.env.VITE_CLARION_API_URL ?? "/api").replace(/\/+$/, "");
+const API_SECRET = import.meta.env.VITE_CLARION_API_SECRET ?? "";
+
+const authHeaders = (): Record<string, string> => {
+  if (!API_SECRET) return {};
+  return { Authorization: `Bearer ${API_SECRET}` };
+};
 
 const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
   let response: Response;
+  const url = `${API_ROOT}${path.startsWith("/") ? path : `/${path}`}`;
   try {
-    response = await fetch(`${BASE}${path}`, {
+    response = await fetch(url, {
       ...init,
       headers: {
         "Content-Type": "application/json",
+        ...authHeaders(),
         ...(init?.headers ?? {}),
       },
     });
   } catch {
-    throw new ApiError("Cannot reach the Clarion API. Is the backend running?", 0, "network_error");
+    throw new ApiError(
+      `Cannot reach the Clarion API at ${API_ROOT}. Is the backend running?`,
+      0,
+      "network_error"
+    );
   }
 
   if (response.status === 204) return undefined as T;

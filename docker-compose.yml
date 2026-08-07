@@ -1,0 +1,10 @@
+services:
+  dashboard:
+    build:
+      context: .
+      args:
+        VITE_CLARION_API_URL: ${VITE_CLARION_API_URL:-http://localhost:5080/api}
+        VITE_CLARION_API_SECRET: ${VITE_CLARION_API_SECRET:-}
+    ports:
+      - "5173:80"
+    restart: unless-stopped
