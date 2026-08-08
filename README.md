@@ -12,8 +12,11 @@ npm run dev        # http://localhost:5173 (proxies /api to the backend on :5080
 
 The dev server proxies `/api` to `http://localhost:5080` by default, so the app makes
 same-origin requests and needs no CORS handling or base URL. Point it elsewhere with
-`CLARION_API_URL` (dev proxy) or `VITE_CLARION_API_URL` + `VITE_CLARION_API_SECRET` in `.env`.
+`CLARION_API_URL` (dev proxy) or `VITE_CLARION_API_URL` in `.env`.
 
+When the backend has `JWT_SECRET` set, the app shows a login page. Create users in
+`clarion-internal-dashboard` (org detail → Dashboard users). Sessions are stored as a
+JWT in `localStorage` and sent as `Authorization: Bearer`.
 ---
 
 ## Design system

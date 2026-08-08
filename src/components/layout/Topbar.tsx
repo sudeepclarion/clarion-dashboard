@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
-import { RefreshCw } from "lucide-react";
+import { LogOut, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { Capabilities, DashboardState } from "@/lib/api/types";
 import { relativeTime } from "@/lib/format/dates";
+import { clearSessionToken } from "@/lib/auth";
 import { Dot } from "@/components/ui/Badge";
 import { IconButton } from "@/components/ui/Button";
 
@@ -73,6 +74,15 @@ export const Topbar = ({ state, isRefreshing, onRefresh, onOpenNav, navIcon }: T
       </span>
       <IconButton label="Refresh data" onClick={onRefresh} disabled={isRefreshing}>
         <RefreshCw className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin text-cyan-clarion")} />
+      </IconButton>
+      <IconButton
+        label="Sign out"
+        onClick={() => {
+          clearSessionToken();
+          window.location.assign("/login");
+        }}
+      >
+        <LogOut className="h-3.5 w-3.5" />
       </IconButton>
     </div>
   </header>

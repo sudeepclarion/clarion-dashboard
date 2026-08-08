@@ -4,6 +4,8 @@
  * status code or a response body shape.
  */
 
+import { clearSessionToken, getSessionToken } from "@/lib/auth";
+
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
@@ -27,11 +29,21 @@ interface Envelope<T> {
 }
 
 const API_ROOT = (import.meta.env.VITE_CLARION_API_URL ?? "/api").replace(/\/+$/, "");
+/** Legacy optional bypass — prefer JWT from login. */
 const API_SECRET = import.meta.env.VITE_CLARION_API_SECRET ?? "";
 
 const authHeaders = (): Record<string, string> => {
-  if (!API_SECRET) return {};
-  return { Authorization: `Bearer ${API_SECRET}` };
+  const token = getSessionToken();
+  if (token) return { Authorization: `Bearer ${token}` };
+  if (API_SECRET) return { Authorization: `Bearer ${API_SECRET}` };
+  return {};
+};
+
+const redirectToLogin = (): void => {
+  clearSessionToken();
+  if (window.location.pathname !== "/login") {
+    window.location.assign("/login");
+  }
 };
 
 const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
@@ -52,6 +64,11 @@ const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
       0,
       "network_error"
     );
+  }
+
+  if (response.status === 401) {
+    redirectToLogin();
+    throw new ApiError("Session expired. Please sign in again.", 401, "unauthorized");
   }
 
   if (response.status === 204) return undefined as T;
@@ -95,4 +112,35 @@ export const http = {
 
   delete: <T>(path: string, body?: unknown): Promise<T> =>
     request<T>(path, { method: "DELETE", body: body === undefined ? undefined : JSON.stringify(body) }),
+};
+
+/** Login must not send a stale session token and must not redirect on 401. */
+export const loginRequest = async <T>(email: string, password: string): Promise<T> => {
+  let response: Response;
+  const url = `${API_ROOT}/auth/login`;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+  } catch {
+    throw new ApiError(
+      `Cannot reach the Clarion API at ${API_ROOT}. Is the backend running?`,
+      0,
+      "network_error"
+    );
+  }
+
+  const payload = (await response.json().catch(() => null)) as Envelope<T> | null;
+
+  if (!response.ok || payload?.error) {
+    throw new ApiError(
+      payload?.error?.message ?? `Request failed (${response.status})`,
+      response.status,
+      payload?.error?.code ?? "request_failed"
+    );
+  }
+
+  return payload?.data as T;
 };

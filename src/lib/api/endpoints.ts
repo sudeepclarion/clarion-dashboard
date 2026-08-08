@@ -1,4 +1,4 @@
-import { http } from "./http";
+import { http, loginRequest } from "./http";
 import type {
   ActivityEntry,
   AvailableMeeting,
@@ -33,16 +33,43 @@ import type {
   WeeklyReport,
 } from "./types";
 
+export type AuthUserRole = "admin" | "member";
+
+export interface AuthUser {
+  id: string;
+  orgId: string;
+  email: string;
+  name: string;
+  role: AuthUserRole;
+  status: "active" | "disabled";
+}
+
+export interface LoginResult {
+  token: string;
+  user: AuthUser;
+}
+
 /**
  * Every backend call the app can make, named after the intent rather than the URL.
  * Components and hooks import from here and never build a path themselves.
  */
 export const api = {
+  auth: {
+    login: (email: string, password: string) => loginRequest<LoginResult>(email, password),
+    me: () => http.get<AuthUser>("/auth/me"),
+  },
+
   dashboard: {
     state: () => http.get<DashboardState>("/state"),
     metrics: () => http.get<DashboardMetrics>("/metrics"),
     activity: (limit = 100) => http.get<ActivityEntry[]>("/activity", { limit }),
-    health: () => http.get<{ status: string; model: string; capabilities: Capabilities }>("/health"),
+    health: () =>
+      http.get<{
+        status: string;
+        model: string;
+        capabilities: Capabilities;
+        auth?: { jwt: boolean; apiSecret: boolean; usersStore: boolean };
+      }>("/health"),
   },
 
   tasks: {

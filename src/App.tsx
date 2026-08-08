@@ -4,6 +4,8 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { LoginPage } from "@/features/auth/LoginPage";
+import { RequireAuth } from "@/features/auth/RequireAuth";
 import { useDashboard } from "@/lib/hooks/useDashboard";
 import { AssistantPage } from "@/features/assistant/AssistantPage";
 import { BoardPage } from "@/features/board/BoardPage";
@@ -31,7 +33,7 @@ const LoadingState = () => (
   </div>
 );
 
-export const App = () => {
+const DashboardApp = () => {
   const dashboard = useDashboard();
 
   return (
@@ -81,3 +83,16 @@ export const App = () => {
   );
 };
 
+export const App = () => (
+  <Routes>
+    <Route path="/login" element={<LoginPage />} />
+    <Route
+      path="/*"
+      element={
+        <RequireAuth>
+          <DashboardApp />
+        </RequireAuth>
+      }
+    />
+  </Routes>
+);
