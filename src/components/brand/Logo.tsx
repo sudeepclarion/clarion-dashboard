@@ -1,6 +1,6 @@
 import { cn } from "@/lib/cn";
 
-/** The mark from the Clarion site: three signals converging into one focused node. */
+/** Minimal medieval clarion (straight trumpet) — cup mouthpiece, long bore, flared bell. */
 export const LogoMark = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 40 40" className={cn("h-8 w-8", className)} role="img" aria-label="Clarion" focusable="false">
     <defs>
@@ -10,9 +10,29 @@ export const LogoMark = ({ className }: { className?: string }) => (
       </linearGradient>
     </defs>
     <rect x="0.75" y="0.75" width="38.5" height="38.5" rx="11" fill="#0B0F17" stroke="#1E293B" strokeWidth="1.5" />
-    <path d="M11 12.5h7.5M11 20h11.5M11 27.5h7.5" stroke="url(#clarion-mark)" strokeWidth="2.2" strokeLinecap="round" />
-    <path d="M22.5 20 29 20" stroke="#00F2FE" strokeWidth="2.2" strokeLinecap="round" />
-    <circle cx="29.5" cy="20" r="3.6" fill="url(#clarion-mark)" />
+    <path fill="url(#clarion-mark)" d="M6.2 17c-1.2 0-1.2 6 0 6l2.9-1.35V18.35z" />
+    <rect x="8.8" y="18" width="15.6" height="4" rx="1" fill="url(#clarion-mark)" />
+    <rect x="12.6" y="18" width="1.15" height="4" fill="#0B0F17" opacity="0.55" />
+    <rect x="16.3" y="18" width="1.15" height="4" fill="#0B0F17" opacity="0.55" />
+    <rect x="20" y="18" width="1.15" height="4" fill="#0B0F17" opacity="0.55" />
+    <path fill="url(#clarion-mark)" d="M24.2 17.2c2.8-0.85 5.7-2.55 8.1-3.85v13.3c-2.4-1.3-5.3-3-8.1-3.85z" />
+    <ellipse cx="31.5" cy="20" rx="1.35" ry="5.3" fill="#0B0F17" />
+    <path
+      d="M34.1 13.8c1.9 2.35 1.9 9.95 0 12.3"
+      fill="none"
+      stroke="url(#clarion-mark)"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      opacity="0.78"
+    />
+    <path
+      d="M36.4 11.5c2.95 3.35 2.95 13.65 0 17"
+      fill="none"
+      stroke="url(#clarion-mark)"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      opacity="0.36"
+    />
   </svg>
 );
 

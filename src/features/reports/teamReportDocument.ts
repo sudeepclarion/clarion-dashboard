@@ -27,7 +27,7 @@ const PRINT_STYLES = `
     font-variant-numeric: tabular-nums;
   }
   .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-  .brand-mark { width: 26px; height: 26px; border-radius: 8px; background: linear-gradient(135deg, #00F2FE, #7000FF); }
+  .brand-mark { width: 26px; height: 26px; display: block; }
   .brand-name { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; }
   h1 { font-size: 21px; margin: 0 0 4px; letter-spacing: -0.02em; }
   .sub { color: #64748B; font-size: 12px; margin-bottom: 22px; }
@@ -110,7 +110,7 @@ export const openTeamReport = (report: TeamActivityReport): boolean => {
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
 <style>${PRINT_STYLES}</style>
 </head><body>
-  <div class="brand"><div class="brand-mark"></div><span class="brand-name">Clarion</span></div>
+  <div class="brand"><svg class="brand-mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="m" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="#00F2FE"/><stop offset="1" stop-color="#7000FF"/></linearGradient></defs><rect x=".75" y=".75" width="38.5" height="38.5" rx="11" fill="#0B0F17" stroke="#1E293B" stroke-width="1.5"/><path fill="url(#m)" d="M6.2 17c-1.2 0-1.2 6 0 6l2.9-1.35V18.35z"/><rect x="8.8" y="18" width="15.6" height="4" rx="1" fill="url(#m)"/><rect x="12.6" y="18" width="1.15" height="4" fill="#0B0F17" opacity="0.55"/><rect x="16.3" y="18" width="1.15" height="4" fill="#0B0F17" opacity="0.55"/><rect x="20" y="18" width="1.15" height="4" fill="#0B0F17" opacity="0.55"/><path fill="url(#m)" d="M24.2 17.2c2.8-0.85 5.7-2.55 8.1-3.85v13.3c-2.4-1.3-5.3-3-8.1-3.85z"/><ellipse cx="31.5" cy="20" rx="1.35" ry="5.3" fill="#0B0F17"/><path d="M34.1 13.8c1.9 2.35 1.9 9.95 0 12.3" fill="none" stroke="url(#m)" stroke-width="1.4" stroke-linecap="round" opacity="0.78"/><path d="M36.4 11.5c2.95 3.35 2.95 13.65 0 17" fill="none" stroke="url(#m)" stroke-width="1.2" stroke-linecap="round" opacity="0.36"/></svg><span class="brand-name">Clarion</span></div>
   <h1>Team Activity Report</h1>
   <div class="sub">
     ${report.members.length} ${report.members.length === 1 ? "member" : "members"} ·
