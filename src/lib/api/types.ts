@@ -428,6 +428,15 @@ export interface ChatTurnResult {
   boardChanged: boolean;
 }
 
+export interface ChatJob {
+  id: string;
+  status: "running" | "completed" | "failed";
+  startedAt: string;
+  finishedAt: string | null;
+  result: ChatTurnResult | null;
+  error: string | null;
+}
+
 export interface AvailableRepo {
   fullName: string;
   private: boolean;

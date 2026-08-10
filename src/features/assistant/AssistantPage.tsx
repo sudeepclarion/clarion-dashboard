@@ -3,10 +3,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bot, SendHorizontal, Trash2, Wrench } from "lucide-react";
 import { api } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
-import type { Capabilities, ChatMessage, DashboardState } from "@/lib/api/types";
+import type { Capabilities, ChatJob, ChatMessage, DashboardState } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { relativeTime } from "@/lib/format/dates";
 import { renderMarkdown } from "@/lib/format/markdown";
+import { ApiError } from "@/lib/api/http";
 import { AiUnavailableNotice } from "@/components/layout/AiUnavailableNotice";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/Badge";
@@ -14,6 +15,26 @@ import { Button, IconButton } from "@/components/ui/Button";
 import { Callout } from "@/components/ui/Callout";
 import { Textarea } from "@/components/ui/Field";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
+
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+const waitForJob = async (jobId: string): Promise<ChatJob> => {
+  let job = await api.chat.job(jobId);
+  while (job.status === "running") {
+    await sleep(1200);
+    job = await api.chat.job(job.id);
+  }
+  if (job.status === "failed") {
+    throw new ApiError(job.error ?? "Assistant turn failed", 500, "chat_failed");
+  }
+  return job;
+};
+
+/** Start a chat turn and poll until the backend finishes (avoids proxy 504s). */
+const sendAndWait = async (message: string): Promise<ChatJob> => {
+  const started = await api.chat.send(message);
+  return waitForJob(started.id);
+};
 
 const CAPABILITY_LABELS: Array<{ key: keyof Capabilities; label: string }> = [
   { key: "ai", label: "Reasoning model" },
@@ -83,6 +104,8 @@ const MessageBubble = ({ message }: { message: ChatMessage }) => {
 export const AssistantPage = ({ state }: { state: DashboardState }) => {
   const queryClient = useQueryClient();
   const [input, setInput] = useState("");
+  const [resuming, setResuming] = useState(false);
+  const resumedJobId = useRef<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const aiReady = state.integrations.capabilities.ai;
 
@@ -92,11 +115,19 @@ export const AssistantPage = ({ state }: { state: DashboardState }) => {
   });
 
   const send = useMutation({
-    mutationFn: (message: string) => api.chat.send(message),
-    onSuccess: async (result) => {
+    mutationFn: (message: string) => sendAndWait(message),
+    onMutate: async () => {
+      // User message is persisted immediately — show it while the model works.
       await queryClient.invalidateQueries({ queryKey: queryKeys.chat });
-      // Only refetch the board when a write tool actually ran.
-      if (result.boardChanged) await queryClient.invalidateQueries({ queryKey: queryKeys.state });
+    },
+    onSuccess: async (job) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.chat });
+      if (job.result?.boardChanged) {
+        await queryClient.invalidateQueries({ queryKey: queryKeys.state });
+      }
+    },
+    onError: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.chat });
     },
   });
 
@@ -106,14 +137,44 @@ export const AssistantPage = ({ state }: { state: DashboardState }) => {
   });
 
   const messages = history.data?.history ?? [];
+  const thinking = send.isPending || resuming;
+
+  // If the page reloads mid-turn, keep polling the in-flight job.
+  useEffect(() => {
+    const active = history.data?.activeJob;
+    if (!active || active.status !== "running" || send.isPending) return;
+    if (resumedJobId.current === active.id) return;
+    resumedJobId.current = active.id;
+
+    let cancelled = false;
+    setResuming(true);
+    void (async () => {
+      try {
+        const job = await waitForJob(active.id);
+        if (cancelled) return;
+        await queryClient.invalidateQueries({ queryKey: queryKeys.chat });
+        if (job.result?.boardChanged) {
+          await queryClient.invalidateQueries({ queryKey: queryKeys.state });
+        }
+      } catch {
+        if (!cancelled) await queryClient.invalidateQueries({ queryKey: queryKeys.chat });
+      } finally {
+        if (!cancelled) setResuming(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [history.data?.activeJob, send.isPending, queryClient]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length, send.isPending]);
+  }, [messages.length, thinking]);
 
   const submit = (): void => {
     const message = input.trim();
-    if (!message || send.isPending) return;
+    if (!message || thinking) return;
     setInput("");
     send.mutate(message);
   };
@@ -137,7 +198,7 @@ export const AssistantPage = ({ state }: { state: DashboardState }) => {
 
       <Panel flush className="flex h-[calc(100vh-24rem)] min-h-[24rem] flex-col">
         <div className="flex-1 space-y-4 overflow-y-auto p-4">
-          {!messages.length && !send.isPending ? (
+          {!messages.length && !thinking ? (
             <div className="mx-auto max-w-2xl py-8">
               <div className="text-center">
                 <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-clarion/20 to-violet-electric/20 ring-1 ring-inset ring-cyan-clarion/25">
@@ -169,7 +230,7 @@ export const AssistantPage = ({ state }: { state: DashboardState }) => {
             <MessageBubble key={message.id} message={message} />
           ))}
 
-          {send.isPending ? (
+          {thinking ? (
             <div className="flex items-center gap-2.5 text-xs text-ink-faint">
               <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-clarion/20 to-violet-electric/20">
                 <Bot className="h-3.5 w-3.5 animate-pulse text-cyan-clarion" />
@@ -208,8 +269,8 @@ export const AssistantPage = ({ state }: { state: DashboardState }) => {
               variant="primary"
               size="lg"
               icon={<SendHorizontal className="h-4 w-4" />}
-              disabled={!aiReady || !input.trim()}
-              loading={send.isPending}
+              disabled={!aiReady || !input.trim() || thinking}
+              loading={thinking}
               onClick={submit}
             >
               Send

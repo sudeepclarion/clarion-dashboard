@@ -13,6 +13,7 @@ import type {
   Capabilities,
   ChatMessage,
   ChatTurnResult,
+  ChatJob,
   Client,
   ClientItem,
   DashboardMetrics,
@@ -155,8 +156,10 @@ export const api = {
   },
 
   chat: {
-    history: (limit = 50) => http.get<{ history: ChatMessage[] }>("/chat", { limit }),
-    send: (message: string) => http.post<ChatTurnResult>("/chat", { message }),
+    history: (limit = 50) =>
+      http.get<{ history: ChatMessage[]; activeJob: ChatJob | null }>("/chat", { limit }),
+    send: (message: string) => http.post<ChatJob>("/chat", { message }),
+    job: (jobId: string) => http.get<ChatJob>(`/chat/jobs/${jobId}`),
     clear: () => http.delete<void>("/chat"),
     tools: () =>
       http.get<Array<{ name: string; description: string; access: string; requires: string | null }>>(
