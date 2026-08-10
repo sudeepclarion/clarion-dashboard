@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Trash2, UserPlus, Users } from "lucide-react";
 import { api } from "@/lib/api/endpoints";
-import { queryKeys } from "@/lib/api/queryKeys";
 import type { DashboardState, TeamRole } from "@/lib/api/types";
 import { getActiveTeamId } from "@/lib/auth";
 import { useDashboardMutation } from "@/lib/hooks/useDashboard";
