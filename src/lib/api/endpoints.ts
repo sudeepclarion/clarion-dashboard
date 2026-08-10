@@ -137,6 +137,8 @@ export const api = {
       http.get<{ latest: TriageRun | null; awaiting: TriageRun | null }>("/triage/status"),
     days: (limit = 21) => http.get<TriageDayReport[]>("/triage/days", { limit }),
     day: (date: string) => http.get<TriageDayReport>(`/triage/days/${date}`),
+    focus: () => http.get<{ focus: string }>("/triage/focus"),
+    saveFocus: (focus: string) => http.put<{ focus: string }>("/triage/focus", { focus }),
     run: (slot?: string) => http.post<TriageRunStart>("/triage/run", slot ? { slot } : {}),
   },
 

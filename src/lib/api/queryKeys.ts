@@ -21,5 +21,6 @@ export const queryKeys = {
   githubAvailable: ["github", "available"] as const,
   triageDays: ["triage", "days"] as const,
   triageDay: (date: string) => ["triage", "days", date] as const,
+  triageFocus: ["triage", "focus"] as const,
   slackChannels: ["slack", "channels"] as const,
 };

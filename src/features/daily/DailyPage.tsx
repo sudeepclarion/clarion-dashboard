@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, ChevronDown, ChevronRight, Play } from "lucide-react";
+import { CalendarDays, Check, ChevronDown, ChevronRight, Play } from "lucide-react";
 import { api } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { DashboardState, TriageDayReport } from "@/lib/api/types";
@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Callout } from "@/components/ui/Callout";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Select } from "@/components/ui/Field";
+import { Select, Textarea } from "@/components/ui/Field";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
 import { Skeleton } from "@/components/ui/Skeleton";
 
@@ -117,16 +117,33 @@ export const DailyPage = (_props: { state: DashboardState }) => {
   const queryClient = useQueryClient();
   const [slot, setSlot] = useState<string>("");
   const [watching, setWatching] = useState(false);
+  const [focusDraft, setFocusDraft] = useState("");
 
   const days = useQuery({
     queryKey: queryKeys.triageDays,
     queryFn: () => api.triage.days(30),
   });
 
+  const focusQuery = useQuery({
+    queryKey: queryKeys.triageFocus,
+    queryFn: () => api.triage.focus(),
+  });
+
+  useEffect(() => {
+    if (focusQuery.data?.focus !== undefined) setFocusDraft(focusQuery.data.focus);
+  }, [focusQuery.data?.focus]);
+
   const status = useQuery({
     queryKey: ["triage", "status"],
     queryFn: () => api.triage.status(),
     refetchInterval: watching ? 3000 : false,
+  });
+
+  const saveFocus = useDashboardMutation((text: string) => api.triage.saveFocus(text), {
+    onSuccess: (data) => {
+      setFocusDraft(data.focus);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.triageFocus });
+    },
   });
 
   const run = useDashboardMutation((chosen?: string) => api.triage.run(chosen || undefined), {
@@ -139,6 +156,7 @@ export const DailyPage = (_props: { state: DashboardState }) => {
 
   const latestStatus = status.data?.latest?.status;
   const running = watching || latestStatus === "running" || run.isPending;
+  const focusDirty = focusDraft !== (focusQuery.data?.focus ?? "");
 
   useEffect(() => {
     if (!watching) return;
@@ -178,6 +196,40 @@ export const DailyPage = (_props: { state: DashboardState }) => {
           </div>
         }
       />
+
+      <Panel className="mb-4">
+        <PanelHeader
+          title="Manager focus"
+          description="Extra instructions applied to every triage run across Slack, GitHub, and the board — e.g. dig into a specific client’s issues."
+          actions={
+            focusDirty ? (
+              <Button
+                variant="primary"
+                icon={<Check className="h-3.5 w-3.5" />}
+                loading={saveFocus.isPending}
+                onClick={() => saveFocus.mutate(focusDraft)}
+              >
+                Save focus
+              </Button>
+            ) : null
+          }
+        />
+        <Textarea
+          rows={3}
+          value={focusDraft}
+          onChange={(event) => setFocusDraft(event.target.value)}
+          placeholder="Also find Able Credit client escalations and whether refunds are blocked…"
+          className="mt-3"
+        />
+        {saveFocus.error ? (
+          <Callout tone="error" className="mt-2">
+            {saveFocus.error.message}
+          </Callout>
+        ) : null}
+        {saveFocus.isSuccess && !focusDirty ? (
+          <p className="mt-2 text-2xs text-ink-faint">Saved — included in the next scheduled or manual triage.</p>
+        ) : null}
+      </Panel>
 
       {run.error ? (
         <Callout tone="error" className="mb-3">
