@@ -185,6 +185,10 @@ export const api = {
       http.get<{ capabilities: Capabilities; categories: CategoryStatus[] }>("/integrations"),
     /** Live credential check for one provider, by id. */
     test: (providerId: string) => http.post<ProviderHealth>(`/integrations/${providerId}/test`),
+    putCredentials: (providerId: "slack" | "jira" | "github", body: Record<string, unknown>) =>
+      http.put<unknown>(`/integrations/${providerId}/credentials`, body),
+    deleteCredentials: (providerId: "slack" | "jira" | "github") =>
+      http.delete<unknown>(`/integrations/${providerId}/credentials`),
     jira: {
       test: () => http.post<{ user: string; board: string; projectKey: string }>("/integrations/jira/test"),
       sync: () => http.post<TicketSyncRecord>("/integrations/jira/sync"),

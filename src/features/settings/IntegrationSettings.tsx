@@ -116,7 +116,7 @@ export const IntegrationSettings = ({ state }: { state: DashboardState }) => {
       <Panel>
         <PanelHeader
           title="How connections work"
-          description="Every integration is optional and grouped by purpose. Providers within a group are interchangeable: connect Linear instead of Jira, or Notion instead of Confluence, and the board, assistant and reports behave identically. Anything unconfigured is simply absent from the assistant's toolset, so it can never claim data it cannot reach."
+          description="Slack, Jira and GitHub credentials are stored for your organization in Settings — no server restart. Other providers still use backend environment variables. Anything unconfigured is absent from the assistant's toolset."
         />
         <div className="mt-3 flex flex-wrap gap-1.5">
           {categories.map((category) => (
