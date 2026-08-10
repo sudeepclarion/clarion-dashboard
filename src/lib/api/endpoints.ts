@@ -8,6 +8,7 @@ import type {
   ProviderHealth,
   AllowedRepo,
   AvailableRepo,
+  GithubRepoCatalogEntry,
   Capabilities,
   ChatMessage,
   ChatTurnResult,
@@ -202,9 +203,14 @@ export const api = {
     },
     github: {
       test: () => http.post<{ user: string; repos: AllowedRepo[] }>("/integrations/github/test"),
-      repos: () => http.get<AllowedRepo[]>("/integrations/github/repos"),
+      catalog: () => http.get<GithubRepoCatalogEntry[]>("/integrations/github/repos"),
       available: () => http.get<AvailableRepo[]>("/integrations/github/repos/available"),
-      save: (repos: AllowedRepo[]) => http.put<AllowedRepo[]>("/integrations/github/repos", { repos }),
+      scanMain: () =>
+        http.post<{
+          repos: AllowedRepo[];
+          scanned: number;
+          failed: Array<{ repo: string; error: string }>;
+        }>("/integrations/github/repos/scan-main"),
     },
   },
 };

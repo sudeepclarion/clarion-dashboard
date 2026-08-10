@@ -16,6 +16,7 @@ export const queryKeys = {
   chatTools: ["chat", "tools"] as const,
   capabilities: ["capabilities"] as const,
   me: ["auth", "me"] as const,
+  githubCatalog: ["github", "catalog"] as const,
   githubRepos: ["github", "repos"] as const,
   githubAvailable: ["github", "available"] as const,
   slackChannels: ["slack", "channels"] as const,

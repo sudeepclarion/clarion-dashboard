@@ -291,6 +291,20 @@ export interface ProviderHealth {
 export interface AllowedRepo {
   repo: string;
   branch: string | null;
+  contributors: string[];
+  scannedAt: string | null;
+}
+
+export interface GithubRepoCatalogEntry {
+  fullName: string;
+  private: boolean;
+  description: string | null;
+  updatedAt: string;
+  language: string | null;
+  defaultBranch: string;
+  mainBranch: string | null;
+  contributors: string[];
+  scannedAt: string | null;
 }
 
 export interface TicketSyncRecord {
