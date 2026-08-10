@@ -307,6 +307,18 @@ export interface GithubRepoCatalogEntry {
   scannedAt: string | null;
 }
 
+export interface GithubMainBranchScanJob {
+  status: "idle" | "running" | "completed" | "failed";
+  startedAt: string | null;
+  finishedAt: string | null;
+  total: number;
+  done: number;
+  currentRepo: string | null;
+  scanned: number;
+  failed: Array<{ repo: string; error: string }>;
+  error: string | null;
+}
+
 export interface TicketSyncRecord {
   providerId: string;
   at: string;

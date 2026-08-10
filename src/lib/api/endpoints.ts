@@ -9,6 +9,7 @@ import type {
   AllowedRepo,
   AvailableRepo,
   GithubRepoCatalogEntry,
+  GithubMainBranchScanJob,
   Capabilities,
   ChatMessage,
   ChatTurnResult,
@@ -205,12 +206,8 @@ export const api = {
       test: () => http.post<{ user: string; repos: AllowedRepo[] }>("/integrations/github/test"),
       catalog: () => http.get<GithubRepoCatalogEntry[]>("/integrations/github/repos"),
       available: () => http.get<AvailableRepo[]>("/integrations/github/repos/available"),
-      scanMain: () =>
-        http.post<{
-          repos: AllowedRepo[];
-          scanned: number;
-          failed: Array<{ repo: string; error: string }>;
-        }>("/integrations/github/repos/scan-main"),
+      scanMain: () => http.post<GithubMainBranchScanJob>("/integrations/github/repos/scan-main"),
+      scanMainStatus: () => http.get<GithubMainBranchScanJob>("/integrations/github/repos/scan-main"),
     },
   },
 };

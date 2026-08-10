@@ -1,8 +1,9 @@
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Github, RefreshCw, Search } from "lucide-react";
 import { api } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
-import type { DashboardState, GithubRepoCatalogEntry } from "@/lib/api/types";
+import type { DashboardState, GithubMainBranchScanJob, GithubRepoCatalogEntry } from "@/lib/api/types";
 import { useDashboardMutation } from "@/lib/hooks/useDashboard";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -24,6 +25,7 @@ const fallbackFromState = (state: DashboardState): GithubRepoCatalogEntry[] =>
 
 export const GithubRepoSettings = ({ state }: { state: DashboardState }) => {
   const queryClient = useQueryClient();
+  const [scanJob, setScanJob] = useState<GithubMainBranchScanJob | null>(null);
 
   const catalog = useQuery({
     queryKey: queryKeys.githubCatalog,
@@ -31,10 +33,38 @@ export const GithubRepoSettings = ({ state }: { state: DashboardState }) => {
   });
 
   const scan = useDashboardMutation(() => api.integrations.github.scanMain(), {
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.githubCatalog });
+    onSuccess: (job) => {
+      setScanJob(job);
     },
   });
+
+  const scanning = scanJob?.status === "running" || scan.isPending;
+
+  useEffect(() => {
+    if (scanJob?.status !== "running") return;
+
+    let cancelled = false;
+    const tick = async () => {
+      try {
+        const job = await api.integrations.github.scanMainStatus();
+        if (cancelled) return;
+        setScanJob(job);
+        if (job.status === "completed" || job.status === "failed") {
+          void queryClient.invalidateQueries({ queryKey: queryKeys.githubCatalog });
+          void queryClient.invalidateQueries({ queryKey: queryKeys.state });
+        }
+      } catch {
+        /* keep last known job; next poll retries */
+      }
+    };
+
+    void tick();
+    const id = window.setInterval(() => void tick(), 1500);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [scanJob?.status, queryClient]);
 
   const repos = catalog.data ?? fallbackFromState(state);
   const scannedCount = repos.filter((repo) => repo.scannedAt).length;
@@ -49,6 +79,7 @@ export const GithubRepoSettings = ({ state }: { state: DashboardState }) => {
             <Button
               icon={<RefreshCw className="h-3.5 w-3.5" />}
               loading={catalog.isFetching}
+              disabled={scanning}
               onClick={() => void catalog.refetch()}
             >
               Refresh list
@@ -56,7 +87,7 @@ export const GithubRepoSettings = ({ state }: { state: DashboardState }) => {
             <Button
               variant="primary"
               icon={<Search className="h-3.5 w-3.5" />}
-              loading={scan.isPending}
+              loading={scanning}
               onClick={() => scan.mutate()}
             >
               Main branch search
@@ -70,10 +101,22 @@ export const GithubRepoSettings = ({ state }: { state: DashboardState }) => {
           {scan.error.message}
         </Callout>
       ) : null}
-      {scan.isSuccess && scan.data ? (
+      {scanJob?.status === "running" ? (
+        <Callout tone="info" className="mt-3">
+          Scanning {scanJob.done}/{scanJob.total || "…"}
+          {scanJob.currentRepo ? ` · ${scanJob.currentRepo}` : ""}. This can take a few minutes —
+          leave this page open.
+        </Callout>
+      ) : null}
+      {scanJob?.status === "completed" ? (
         <Callout tone="success" className="mt-3">
-          Scanned {scan.data.scanned} of {scan.data.repos.length} repos
-          {scan.data.failed.length ? ` · ${scan.data.failed.length} failed` : ""}.
+          Scanned {scanJob.scanned} of {scanJob.total} repos
+          {scanJob.failed.length ? ` · ${scanJob.failed.length} failed` : ""}.
+        </Callout>
+      ) : null}
+      {scanJob?.status === "failed" ? (
+        <Callout tone="error" className="mt-3">
+          {scanJob.error ?? "Main branch search failed."}
         </Callout>
       ) : null}
       {catalog.error ? (
