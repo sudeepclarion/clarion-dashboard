@@ -12,7 +12,6 @@ import type {
   GithubMainBranchScanJob,
   Capabilities,
   ChatMessage,
-  ChatTurnResult,
   ChatJob,
   Client,
   ClientItem,
