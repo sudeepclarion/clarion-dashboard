@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bot, SendHorizontal, Trash2, Wrench } from "lucide-react";
+import { Bot, MessageSquarePlus, SendHorizontal, Wrench } from "lucide-react";
 import { api } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { Capabilities, ChatJob, ChatMessage, DashboardState } from "@/lib/api/types";
@@ -11,7 +11,7 @@ import { ApiError } from "@/lib/api/http";
 import { AiUnavailableNotice } from "@/components/layout/AiUnavailableNotice";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/Badge";
-import { Button, IconButton } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { Callout } from "@/components/ui/Callout";
 import { Textarea } from "@/components/ui/Field";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
@@ -131,9 +131,13 @@ export const AssistantPage = ({ state }: { state: DashboardState }) => {
     },
   });
 
-  const clear = useMutation({
+  const newChat = useMutation({
     mutationFn: () => api.chat.clear(),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.chat }),
+    onSuccess: () => {
+      setInput("");
+      resumedJobId.current = null;
+      return queryClient.invalidateQueries({ queryKey: queryKeys.chat });
+    },
   });
 
   const messages = history.data?.history ?? [];
@@ -184,13 +188,16 @@ export const AssistantPage = ({ state }: { state: DashboardState }) => {
       <PageHeader
         eyebrow="Assistant"
         title="Ask Clarion"
-        description="It answers from live board, sprint, Jira, Slack and repo data — and only changes something when you actually ask for a change."
+        description="It answers from live board, sprint, Jira, Slack and repo data — and only changes something when you actually ask for a change. Use New chat to start with a clean slate (prior messages are not sent to the model)."
         actions={
-          messages.length ? (
-            <IconButton label="Clear conversation" variant="danger" onClick={() => clear.mutate()}>
-              <Trash2 className="h-3.5 w-3.5" />
-            </IconButton>
-          ) : null
+          <Button
+            icon={<MessageSquarePlus className="h-3.5 w-3.5" />}
+            disabled={!aiReady || thinking || !messages.length || newChat.isPending}
+            loading={newChat.isPending}
+            onClick={() => newChat.mutate()}
+          >
+            New chat
+          </Button>
         }
       />
 
