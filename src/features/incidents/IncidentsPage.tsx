@@ -70,7 +70,16 @@ const ReportPanel = ({ report, defaultOpen }: { report: IncidentReport; defaultO
         )}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-sm font-semibold text-ink">Last {report.windowHours}h</h2>
+            <h2 className="text-sm font-semibold text-ink">
+              {report.source === "triage" && report.triageDate
+                ? `Triage ${report.triageDate} · ${report.triageSlot ?? "—"} IST`
+                : `Last ${report.windowHours}h`}
+            </h2>
+            {report.source === "triage" ? (
+              <Badge className="bg-violet-electric/10 text-violet-electric ring-violet-electric/25">
+                triage
+              </Badge>
+            ) : null}
             {report.incidents.length ? (
               <>
                 {(["critical", "high", "medium", "low"] as const)
@@ -86,8 +95,10 @@ const ReportPanel = ({ report, defaultOpen }: { report: IncidentReport; defaultO
             )}
           </div>
           <p className="mt-1 text-2xs text-ink-faint">
-            {formatDateTime(report.generatedAt)} · {report.messagesScanned} messages across{" "}
-            {report.channelsScanned.length} channels
+            {formatDateTime(report.generatedAt)}
+            {report.source === "triage"
+              ? " · from daily triage"
+              : ` · ${report.messagesScanned} messages across ${report.channelsScanned.length} channels`}
           </p>
         </div>
         <span className="shrink-0 text-2xs text-ink-faint">{relativeTime(report.generatedAt)}</span>
@@ -122,7 +133,7 @@ export const IncidentsPage = ({ state }: { state: DashboardState }) => {
       <PageHeader
         eyebrow="Reliability"
         title="Incidents"
-        description="Clarion reads every Slack channel the bot has joined and separates real incidents — outages, user-facing bugs, failed deploys, urgent escalations — from ordinary chatter."
+        description="Clarion reads Slack (manual scan) and daily triage for outages, user-facing bugs, failed deploys, and urgent escalations — each triage slot is stored as its own dated report."
         actions={
           <>
             <Select value={hours} onChange={(event) => setHours(Number(event.target.value))} className="w-40">

@@ -243,6 +243,9 @@ export interface IncidentReport {
   messagesScanned: number;
   overview: string;
   incidents: Incident[];
+  source?: "scan" | "triage";
+  triageDate?: string | null;
+  triageSlot?: string | null;
 }
 
 export interface ClientItem {
@@ -251,6 +254,10 @@ export interface ClientItem {
   ticketKey: string | null;
   taskId: string | null;
   status: TaskStatus | null;
+  source?: "analysis" | "triage";
+  triageDate?: string | null;
+  triageSlot?: string | null;
+  disposition?: "open" | "resolved" | "monitoring" | null;
 }
 
 export interface Client {

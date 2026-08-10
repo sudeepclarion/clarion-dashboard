@@ -50,9 +50,30 @@ const ItemRow = ({
 
   return (
     <li className="flex items-start gap-2.5 rounded-lg border border-hairline bg-base-900/30 px-3 py-2.5">
-      <p className="min-w-0 flex-1 text-xs leading-relaxed text-ink-muted">{item.text}</p>
+      <div className="min-w-0 flex-1 space-y-1">
+        <p className="text-xs leading-relaxed text-ink-muted">{item.text}</p>
+        {item.source === "triage" && (item.triageDate || item.disposition) ? (
+          <p className="text-[10px] text-ink-faint">
+            {item.triageDate
+              ? `Triage ${item.triageDate}${item.triageSlot ? ` · ${item.triageSlot}` : ""} IST`
+              : "From triage"}
+            {item.disposition ? ` · ${item.disposition}` : ""}
+          </p>
+        ) : null}
+      </div>
 
       <div className="flex shrink-0 items-center gap-1.5">
+        {item.disposition && item.disposition !== "open" ? (
+          <Badge
+            className={
+              item.disposition === "resolved"
+                ? "bg-signal-positive/10 text-signal-positive ring-signal-positive/25"
+                : "bg-state-progress/10 text-state-progress ring-state-progress/25"
+            }
+          >
+            {item.disposition}
+          </Badge>
+        ) : null}
         {item.status ? (
           <span
             className={cn(
@@ -191,7 +212,7 @@ export const ClientsPage = ({ state }: { state: DashboardState }) => {
       <PageHeader
         eyebrow="Accounts"
         title="Clients"
-        description="Per-client risk, assembled from every task, incident and standup line that mentions them — so an escalation never lives only in someone's inbox."
+        description="Per-client risk from board, standups, and daily triage (date/slot tagged). Refresh rebuilds analysis buckets but keeps triage-sourced items."
       />
 
       {!aiReady ? <AiUnavailableNotice feature="Client views" /> : null}
