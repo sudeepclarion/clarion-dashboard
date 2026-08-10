@@ -69,11 +69,13 @@ const PersonCard = ({ name, state }: { name: string; state: DashboardState }) =>
       <header className="flex items-start gap-3 p-4">
         <Avatar name={name} size="md" />
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <p className="truncate text-sm font-semibold text-ink">{name}</p>
+            {member?.role === "manager" ? (
+              <Badge className="bg-cyan-clarion/10 text-cyan-clarion ring-cyan-clarion/25">Manager</Badge>
+            ) : null}
             {summary ? <HealthPill health={summary.health} /> : null}
           </div>
-          {member?.role ? <p className="mt-0.5 text-2xs text-ink-faint">{member.role}</p> : null}
         </div>
       </header>
 

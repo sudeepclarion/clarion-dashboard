@@ -13,10 +13,12 @@ export type ChangeSource =
   | "report"
   | "system";
 
+export type TeamRole = "manager" | "member";
+
 export interface Member {
   id: string;
   name: string;
-  role: string | null;
+  role: TeamRole | null;
   createdAt: string;
 }
 

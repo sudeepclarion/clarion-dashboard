@@ -32,6 +32,7 @@ import type {
   TaskPatch,
   TaskStatus,
   TeamActivityReport,
+  TeamRole,
   TriageDayReport,
   TriageRun,
   TriageRunStart,
@@ -103,8 +104,8 @@ export const api = {
 
   members: {
     list: () => http.get<MemberStats[]>("/members"),
-    add: (name: string, role?: string) => http.post<Member>("/members", { name, role }),
-    update: (id: string, changes: { name?: string; role?: string | null }) =>
+    add: (name: string, role?: TeamRole | string) => http.post<Member>("/members", { name, role }),
+    update: (id: string, changes: { name?: string; role?: TeamRole | string | null }) =>
       http.patch<Member>(`/members/${id}`, changes),
     remove: (id: string) => http.delete<void>(`/members/${id}`),
     refreshSummaries: () => http.post<Record<string, MemberSummary>>("/members/summaries"),
