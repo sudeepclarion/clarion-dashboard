@@ -48,6 +48,22 @@ export interface AuthUser {
   name: string;
   role: AuthUserRole;
   status: "active" | "disabled";
+  teams?: TeamSummary[];
+}
+
+export interface TeamSummary {
+  id: string;
+  orgId?: string;
+  name: string;
+  memberCount: number;
+  createdAt?: string;
+}
+
+export interface SlackDirectoryUser {
+  id: string;
+  name: string;
+  realName: string;
+  email: string | null;
 }
 
 export interface LoginResult {
@@ -63,6 +79,16 @@ export const api = {
   auth: {
     login: (email: string, password: string) => loginRequest<LoginResult>(email, password),
     me: () => http.get<AuthUser>("/auth/me"),
+  },
+
+  teams: {
+    list: () => http.get<TeamSummary[]>("/teams"),
+    create: (name: string) => http.post<TeamSummary>("/teams", { name }),
+    slackDirectory: () => http.get<SlackDirectoryUser[]>("/teams/slack-directory"),
+    addFromSlack: (
+      teamId: string,
+      users: Array<{ slackUserId: string; role?: "manager" | "member" }>
+    ) => http.post<{ added: number; members: Member[] }>(`/teams/${teamId}/members/from-slack`, { users }),
   },
 
   dashboard: {

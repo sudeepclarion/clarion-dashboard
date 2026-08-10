@@ -4,7 +4,7 @@
  * status code or a response body shape.
  */
 
-import { clearSessionToken, getSessionToken } from "@/lib/auth";
+import { clearSessionToken, getActiveTeamId, getSessionToken } from "@/lib/auth";
 
 export class ApiError extends Error {
   readonly status: number;
@@ -33,10 +33,13 @@ const API_ROOT = (import.meta.env.VITE_CLARION_API_URL ?? "/api").replace(/\/+$/
 const API_SECRET = import.meta.env.VITE_CLARION_API_SECRET ?? "";
 
 const authHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = {};
   const token = getSessionToken();
-  if (token) return { Authorization: `Bearer ${token}` };
-  if (API_SECRET) return { Authorization: `Bearer ${API_SECRET}` };
-  return {};
+  if (token) headers.Authorization = `Bearer ${token}`;
+  else if (API_SECRET) headers.Authorization = `Bearer ${API_SECRET}`;
+  const teamId = getActiveTeamId();
+  if (teamId) headers["X-Clarion-Team-Id"] = teamId;
+  return headers;
 };
 
 const redirectToLogin = (): void => {
