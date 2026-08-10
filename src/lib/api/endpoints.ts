@@ -34,6 +34,7 @@ import type {
   TeamActivityReport,
   TriageDayReport,
   TriageRun,
+  TriageRunStart,
   WeeklyReport,
 } from "./types";
 
@@ -136,7 +137,7 @@ export const api = {
       http.get<{ latest: TriageRun | null; awaiting: TriageRun | null }>("/triage/status"),
     days: (limit = 21) => http.get<TriageDayReport[]>("/triage/days", { limit }),
     day: (date: string) => http.get<TriageDayReport>(`/triage/days/${date}`),
-    run: (slot?: string) => http.post<TriageRun>("/triage/run", slot ? { slot } : {}),
+    run: (slot?: string) => http.post<TriageRunStart>("/triage/run", slot ? { slot } : {}),
   },
 
   reports: {

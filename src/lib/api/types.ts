@@ -160,6 +160,14 @@ export interface TriageRun {
   finishedAt: string | null;
 }
 
+export interface TriageRunStart {
+  started: true;
+  orgId: string;
+  date: string;
+  slot: string;
+  status: "running";
+}
+
 export interface MeetingChange {
   action: "created" | "updated" | "skipped";
   taskId: string | null;
