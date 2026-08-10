@@ -19,6 +19,7 @@ import { ReviewPage } from "@/features/review/ReviewPage";
 import { SettingsPage } from "@/features/settings/SettingsPage";
 import { SprintsPage } from "@/features/sprints/SprintsPage";
 import { StandupPage } from "@/features/standup/StandupPage";
+import { DailyPage } from "@/features/daily/DailyPage";
 
 /** First-load placeholder that mirrors the real layout, to avoid a jump. */
 const LoadingState = () => (
@@ -67,6 +68,7 @@ const DashboardApp = () => {
           <Route path="/" element={<OverviewPage state={dashboard.data} />} />
           <Route path="/board" element={<BoardPage state={dashboard.data} />} />
           <Route path="/standup" element={<StandupPage state={dashboard.data} />} />
+          <Route path="/daily" element={<DailyPage state={dashboard.data} />} />
           <Route path="/sprints" element={<SprintsPage state={dashboard.data} />} />
           <Route path="/meetings" element={<MeetingsPage state={dashboard.data} />} />
           <Route path="/people" element={<PeoplePage state={dashboard.data} />} />

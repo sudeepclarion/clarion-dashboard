@@ -32,6 +32,8 @@ import type {
   TaskPatch,
   TaskStatus,
   TeamActivityReport,
+  TriageDayReport,
+  TriageRun,
   WeeklyReport,
 } from "./types";
 
@@ -127,6 +129,14 @@ export const api = {
   standups: {
     list: (limit = 30) => http.get<Standup[]>("/standups", { limit }),
     ingest: (text: string) => http.post<Standup>("/standups", { text }),
+  },
+
+  triage: {
+    status: () =>
+      http.get<{ latest: TriageRun | null; awaiting: TriageRun | null }>("/triage/status"),
+    days: (limit = 21) => http.get<TriageDayReport[]>("/triage/days", { limit }),
+    day: (date: string) => http.get<TriageDayReport>(`/triage/days/${date}`),
+    run: (slot?: string) => http.post<TriageRun>("/triage/run", slot ? { slot } : {}),
   },
 
   reports: {
