@@ -108,12 +108,27 @@ export interface StandupChange {
   blocker: string | null;
 }
 
+export interface StandupMemberEntry {
+  member: string;
+  yesterday: string[];
+  todayFocus: string;
+  onLeave: boolean;
+  repliedAt: string | null;
+  replyRaw: string | null;
+  dmSentAt: string | null;
+}
+
 export interface Standup {
   id: string;
   createdAt: string;
-  rawText: string;
-  unattributedNotes: string;
-  appliedChanges: StandupChange[];
+  updatedAt: string;
+  date: string;
+  kind: "daily" | "paste";
+  status: "collecting" | "published";
+  members: StandupMemberEntry[];
+  rawText?: string;
+  unattributedNotes?: string;
+  appliedChanges?: StandupChange[];
 }
 
 export interface ReportSummary {

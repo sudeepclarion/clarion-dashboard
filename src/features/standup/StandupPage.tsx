@@ -1,76 +1,63 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { ArrowRight, ClipboardList, Sparkles } from "lucide-react";
-import { api } from "@/lib/api/endpoints";
-import type { DashboardState, Standup, StandupChange } from "@/lib/api/types";
+import { useMemo, useState } from "react";
+import { CalendarDays, ClipboardList, Coffee } from "lucide-react";
+import type { DashboardState, Standup, StandupMemberEntry } from "@/lib/api/types";
 import { formatDateTime, relativeTime } from "@/lib/format/dates";
-import { useDashboardMutation } from "@/lib/hooks/useDashboard";
-import { AiUnavailableNotice } from "@/components/layout/AiUnavailableNotice";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { Callout } from "@/components/ui/Callout";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Textarea } from "@/components/ui/Field";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
 
-const PLACEHOLDER = `Rahul:
-- Finished the payment webhook, PR is up for review
-- Starting the refund flow, should be done by Friday
+const isDaily = (standup: Standup): boolean =>
+  (standup.kind ?? (standup.members?.length ? "daily" : "paste")) === "daily";
 
-Priya:
-- Still blocked on staging access for the KYC service
-- Fixed the IIFL Homes config issue from yesterday`;
-
-/**
- * One applied change. Showing the diff — not just "done" — is the point: the manager
- * has to be able to audit what the model did to their board.
- */
-const AppliedChange = ({ change }: { change: StandupChange }) => (
-  <li className="rounded-lg border border-hairline bg-base-900/40 p-3">
+const MemberCard = ({ entry }: { entry: StandupMemberEntry }) => (
+  <li className="rounded-lg border border-hairline bg-base-900/40 p-4">
     <div className="flex flex-wrap items-center gap-2">
-      <Avatar name={change.member} size="xs" />
-      <span className="text-xs font-medium text-ink">{change.member}</span>
-      <Badge
-        className={
-          change.action === "created"
-            ? "bg-signal-positive/10 text-signal-positive ring-signal-positive/25"
-            : "bg-state-progress/10 text-state-progress ring-state-progress/25"
-        }
-      >
-        {change.action}
-      </Badge>
-      <Link
-        to={`/board?task=${change.taskId}`}
-        className="min-w-0 flex-1 truncate text-xs text-cyan-clarion hover:underline"
-      >
-        {change.taskTitle}
-      </Link>
+      <Avatar name={entry.member} size="sm" />
+      <span className="text-sm font-medium text-ink">{entry.member}</span>
+      {entry.onLeave ? (
+        <Badge className="bg-signal-warning/10 text-signal-warning ring-signal-warning/25">On leave</Badge>
+      ) : entry.repliedAt ? (
+        <Badge className="bg-signal-positive/10 text-signal-positive ring-signal-positive/25">Replied</Badge>
+      ) : entry.dmSentAt ? (
+        <Badge>Awaiting reply</Badge>
+      ) : (
+        <Badge className="bg-ink-faint/10 text-ink-faint ring-ink-faint/20">Pending DM</Badge>
+      )}
     </div>
 
-    <p className="mt-1.5 text-2xs leading-relaxed text-ink-muted">{change.summary}</p>
-
-    {change.changes.length ? (
-      <div className="mt-2 flex flex-wrap gap-1.5">
-        {change.changes.map((entry, index) => (
-          <span key={index} className="rounded bg-base-900/70 px-1.5 py-0.5 font-mono text-[10px] text-ink-faint">
-            {entry}
-          </span>
-        ))}
+    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+      <div>
+        <p className="text-2xs font-medium uppercase tracking-wide text-ink-faint">Yesterday</p>
+        {entry.yesterday?.length ? (
+          <ul className="mt-1.5 space-y-1">
+            {entry.yesterday.map((line, index) => (
+              <li key={index} className="text-2xs leading-relaxed text-ink-muted">
+                {line}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-1.5 text-2xs text-ink-faint">No clear activity detected</p>
+        )}
       </div>
-    ) : null}
-
-    {change.blocker ? (
-      <p className="mt-2 rounded-md bg-signal-critical/[0.07] px-2 py-1.5 text-2xs text-signal-critical">
-        Blocker: {change.blocker}
-      </p>
-    ) : null}
+      <div>
+        <p className="text-2xs font-medium uppercase tracking-wide text-ink-faint">Today&apos;s focus</p>
+        <p className="mt-1.5 whitespace-pre-wrap text-2xs leading-relaxed text-ink">
+          {entry.todayFocus?.trim() || "—"}
+        </p>
+      </div>
+    </div>
   </li>
 );
 
-const HistoryEntry = ({ standup }: { standup: Standup }) => {
+const HistoryRow = ({ standup }: { standup: Standup }) => {
   const [open, setOpen] = useState(false);
+  const daily = isDaily(standup);
+  const replied = standup.members?.filter((m) => m.repliedAt || m.onLeave).length ?? 0;
+  const total = standup.members?.length ?? 0;
 
   return (
     <li className="border-b border-hairline/60 last:border-0">
@@ -79,130 +66,103 @@ const HistoryEntry = ({ standup }: { standup: Standup }) => {
         onClick={() => setOpen((value) => !value)}
         className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-surface-raised/60"
       >
-        <span className="flex-1 text-xs text-ink">{formatDateTime(standup.createdAt)}</span>
-        <Badge>{standup.appliedChanges.length} changes</Badge>
-        <span className="text-2xs text-ink-faint">{relativeTime(standup.createdAt)}</span>
+        <span className="flex-1 text-xs text-ink">
+          {standup.date || formatDateTime(standup.createdAt)}
+        </span>
+        <Badge>{daily ? `${replied}/${total} replies` : `${standup.appliedChanges?.length ?? 0} paste`}</Badge>
+        <Badge>{standup.status ?? "published"}</Badge>
+        <span className="text-2xs text-ink-faint">{relativeTime(standup.updatedAt || standup.createdAt)}</span>
       </button>
-
-      {open ? (
-        <div className="space-y-3 px-4 pb-4">
-          <pre className="max-h-48 overflow-y-auto whitespace-pre-wrap rounded-lg bg-base-900/60 p-3 text-2xs leading-relaxed text-ink-muted">
-            {standup.rawText}
-          </pre>
-          <ul className="space-y-1.5">
-            {standup.appliedChanges.map((change, index) => (
-              <li key={index} className="flex items-center gap-2 text-2xs text-ink-muted">
-                <ArrowRight className="h-3 w-3 shrink-0 text-ink-faint" />
-                <span className="font-medium text-ink">{change.member}</span>
-                {change.action}
-                <Link to={`/board?task=${change.taskId}`} className="truncate text-cyan-clarion hover:underline">
-                  {change.taskTitle}
-                </Link>
-              </li>
-            ))}
-          </ul>
-          {standup.unattributedNotes ? (
-            <Callout tone="info">Unattributed: {standup.unattributedNotes}</Callout>
-          ) : null}
-        </div>
+      {open && daily ? (
+        <ul className="space-y-2 px-4 pb-4">
+          {(standup.members ?? []).map((entry) => (
+            <MemberCard key={entry.member} entry={entry} />
+          ))}
+        </ul>
+      ) : null}
+      {open && !daily ? (
+        <pre className="mx-4 mb-4 max-h-40 overflow-y-auto whitespace-pre-wrap rounded-lg bg-base-900/60 p-3 text-2xs text-ink-muted">
+          {standup.rawText || "(empty paste)"}
+        </pre>
       ) : null}
     </li>
   );
 };
 
 export const StandupPage = ({ state }: { state: DashboardState }) => {
-  const [text, setText] = useState("");
-  const aiReady = state.integrations.capabilities.ai;
-
-  const ingest = useDashboardMutation((raw: string) => api.standups.ingest(raw), {
-    onSuccess: () => setText(""),
-  });
+  const dailyStandups = useMemo(
+    () => state.standups.filter(isDaily),
+    [state.standups]
+  );
+  const today = dailyStandups[0];
 
   return (
     <>
       <PageHeader
-        eyebrow="Daily intake"
+        eyebrow="Operate"
         title="Standup"
-        description="Paste the raw morning updates. Clarion matches each item to existing work, moves statuses, records deadlines with the reason they changed, and flags blockers — then shows you exactly what it did."
+        description="Each morning at 10:00 IST the bot tells every member what they worked on yesterday (from repos & triage) and asks for today's focus. At 11:00 IST triage publishes this page — leave is recorded as today's focus while yesterday still updates from git."
       />
 
       <div className="grid gap-4 xl:grid-cols-5">
         <div className="space-y-4 xl:col-span-3">
           <Panel>
             <PanelHeader
-              title="Today's updates"
-              description="One person per block, name first. Casing, nicknames and typos are fine."
+              title={today ? `Team standup · ${today.date}` : "Today's standup"}
+              description={
+                today?.status === "collecting"
+                  ? "Check-in DMs are out — waiting on replies. The board view finalizes after 11:00 triage."
+                  : today?.status === "published"
+                    ? "Published from the 11:00 triage run."
+                    : "Appears after the 10:00 check-in (or 11:00 triage if check-in was missed)."
+              }
             />
 
-            {!aiReady ? <AiUnavailableNotice feature="Standup parsing" /> : null}
-
-            <Textarea
-              rows={16}
-              className="mt-3 font-mono text-2xs leading-relaxed"
-              value={text}
-              onChange={(event) => setText(event.target.value)}
-              placeholder={PLACEHOLDER}
-              disabled={!aiReady}
-            />
-
-            <div className="mt-3 flex items-center gap-3">
-              <Button
-                variant="primary"
-                size="lg"
-                icon={<Sparkles className="h-4 w-4" />}
-                disabled={!aiReady || !text.trim()}
-                loading={ingest.isPending}
-                onClick={() => ingest.mutate(text)}
-              >
-                {ingest.isPending ? "Reading the standup…" : "Apply to the board"}
-              </Button>
-              <p className="text-2xs text-ink-faint">
-                {state.members.length} team {state.members.length === 1 ? "member" : "members"} recognised
-              </p>
-            </div>
-
-            {ingest.error ? (
-              <Callout tone="error" className="mt-3">
-                {ingest.error.message}
-              </Callout>
-            ) : null}
-          </Panel>
-
-          {ingest.data ? (
-            <Panel>
-              <PanelHeader
-                title={`${ingest.data.appliedChanges.length} ${ingest.data.appliedChanges.length === 1 ? "change" : "changes"} applied`}
-                description="Every edit Clarion made, with the note it recorded on each task."
+            {!today ? (
+              <EmptyState
+                className="mt-4"
+                icon={<Coffee className="h-4 w-4" />}
+                title="No standup yet today"
+                description="At 10:00 IST members get a Slack DM with yesterday's inferred work and a question about today's focus."
               />
-              {ingest.data.appliedChanges.length ? (
-                <ul className="mt-3 space-y-2">
-                  {ingest.data.appliedChanges.map((change, index) => (
-                    <AppliedChange key={index} change={change} />
+            ) : (
+              <>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Badge>{today.status}</Badge>
+                  <Badge>
+                    {(today.members ?? []).filter((m) => m.onLeave).length} on leave
+                  </Badge>
+                  <Badge>
+                    {(today.members ?? []).filter((m) => m.repliedAt && !m.onLeave).length} focus replies
+                  </Badge>
+                </div>
+                <ul className="mt-4 space-y-3">
+                  {(today.members ?? []).map((entry) => (
+                    <MemberCard key={entry.member} entry={entry} />
                   ))}
                 </ul>
-              ) : (
-                <Callout tone="info" className="mt-3">
-                  Nothing actionable was found in that paste — no tasks were created or changed.
-                </Callout>
-              )}
-              {ingest.data.unattributedNotes ? (
-                <Callout tone="warning" className="mt-3">
-                  Could not attribute to a known member: {ingest.data.unattributedNotes}
-                </Callout>
-              ) : null}
-            </Panel>
-          ) : null}
+              </>
+            )}
+          </Panel>
+
+          <Callout tone="info">
+            Someone on leave yesterday can still show engineering activity today — yesterday&apos;s column always
+            comes from repos / PRs, not from whether they said they were off.
+          </Callout>
         </div>
 
         <div className="xl:col-span-2">
           <Panel flush>
             <div className="p-4">
-              <PanelHeader title="History" description="Every standup, with its raw text kept for audit." />
+              <PanelHeader
+                title="History"
+                description="Prior daily standups (and any legacy paste ingest)."
+              />
             </div>
             {state.standups.length ? (
               <ul className="max-h-[36rem] overflow-y-auto border-t border-hairline">
                 {state.standups.map((standup) => (
-                  <HistoryEntry key={standup.id} standup={standup} />
+                  <HistoryRow key={standup.id} standup={standup} />
                 ))}
               </ul>
             ) : (
@@ -210,10 +170,21 @@ export const StandupPage = ({ state }: { state: DashboardState }) => {
                 <EmptyState
                   icon={<ClipboardList className="h-4 w-4" />}
                   title="No standups yet"
-                  description="The first paste will appear here alongside what it changed."
+                  description="The first 10:00 check-in will appear here."
                 />
               </div>
             )}
+          </Panel>
+
+          <Panel className="mt-4">
+            <div className="flex items-start gap-3">
+              <CalendarDays className="mt-0.5 h-4 w-4 text-cyan-clarion" />
+              <div className="text-2xs leading-relaxed text-ink-muted">
+                <p className="font-medium text-ink">Schedule (IST)</p>
+                <p className="mt-1">10:00 — Slack check-in to every team member</p>
+                <p>11:00 — Triage runs once; this page is published / refreshed</p>
+              </div>
+            </div>
           </Panel>
         </div>
       </div>

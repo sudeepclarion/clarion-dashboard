@@ -59,7 +59,7 @@ const DayCard = ({ report }: { report: TriageDayReport }) => {
         <div className="space-y-4 border-t border-hairline p-4">
           {report.combinedSummary ? (
             <div>
-              <PanelHeader title="Day standup" description="Both triage slots plus communications, rolled up." />
+              <PanelHeader title="Day standup" description="11:00 triage rollup — engineering, Slack, and proposals." />
               <div
                 className="prose-clarion mt-3 whitespace-pre-wrap text-xs text-ink-muted"
                 dangerouslySetInnerHTML={{
@@ -171,7 +171,7 @@ export const DailyPage = (_props: { state: DashboardState }) => {
       <PageHeader
         eyebrow="Operate"
         title="Daily triage"
-        description="Morning and afternoon triage reports (weekends: one at 15:00 IST). Treat these as the day’s standup — engineering, Slack, and proposed actions."
+        description="Once daily at 11:00 IST: engineering + Slack signals and proposed actions for manager approval. Team member standups (yesterday / today focus) live on the Standup page."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Select
@@ -181,8 +181,7 @@ export const DailyPage = (_props: { state: DashboardState }) => {
               aria-label="Triage slot"
             >
               <option value="">Now (current time)</option>
-              <option value="10:00">10:00 IST</option>
-              <option value="15:00">15:00 IST</option>
+              <option value="11:00">11:00 IST</option>
             </Select>
             <Button
               variant="primary"
@@ -259,7 +258,7 @@ export const DailyPage = (_props: { state: DashboardState }) => {
         <EmptyState
           icon={<CalendarDays className="h-4 w-4" />}
           title="No triage reports yet"
-          description="Clarion runs triage at 10:00 and 15:00 IST on weekdays (15:00 only on weekends). Use Run triage above for a manual pass."
+          description="Clarion runs triage once daily at 11:00 IST. Use Run triage above for a manual pass. Member check-ins are on the Standup page (10:00 IST)."
           action={
             <Button
               variant="primary"
