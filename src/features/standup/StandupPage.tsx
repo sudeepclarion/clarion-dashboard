@@ -108,7 +108,7 @@ export const StandupPage = ({ state }: { state: DashboardState }) => {
     [state.standups]
   );
   const today = dailyStandups[0];
-  const agentsV2 = state.agentConfig?.agentsV2Enabled === true;
+  const agentsV2 = state.agentConfig?.agentsV2Enabled !== false;
 
   return (
     <>

@@ -510,7 +510,7 @@ const LegacyTriageView = () => {
 };
 
 export const DailyPage = ({ state }: { state: DashboardState }) => {
-  if (state.agentConfig?.agentsV2Enabled) {
+  if (state.agentConfig?.agentsV2Enabled !== false) {
     return <DecideView state={state} />;
   }
   return <LegacyTriageView />;

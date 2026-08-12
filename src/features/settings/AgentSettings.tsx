@@ -96,23 +96,25 @@ export const AgentSettings = ({ state }: { state: DashboardState }) => {
     <div className="space-y-4">
       <Panel>
         <PanelHeader
-          title="Agents v2"
-          description="Gatherer → Decider → Working. When enabled, legacy 10:00/11:00 triage and standup DMs stop for this org."
+          title="Agents spine"
+          description="Gatherer → Decider → Working is the default. Turn off only as an emergency kill switch (legacy triage is no longer scheduled)."
         />
         <label className="mt-3 flex items-center gap-2 text-sm text-ink">
           <input
             type="checkbox"
-            checked={cfg.agentsV2Enabled === true}
+            checked={cfg.agentsV2Enabled !== false}
             onChange={(e) => setDraft({ ...cfg, agentsV2Enabled: e.target.checked })}
           />
-          Enable Agents v2 spine
+          Agents spine enabled (default on)
         </label>
-        {cfg.agentsV2Enabled ? (
+        {cfg.agentsV2Enabled !== false ? (
           <Badge className="mt-2 bg-signal-positive/10 text-signal-positive ring-signal-positive/25">
-            Active — Decide page + ship-log standup
+            Active — Decide + ship-log standup
           </Badge>
         ) : (
-          <Badge className="mt-2">Legacy triage schedule</Badge>
+          <Badge className="mt-2 bg-signal-danger/10 text-signal-danger ring-signal-danger/25">
+            Disabled — day-close / gather / working DMs off
+          </Badge>
         )}
       </Panel>
 
