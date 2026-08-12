@@ -81,7 +81,7 @@ export const AgentSettings = ({ state }: { state: DashboardState }) => {
     save.mutate({
       timezone: cfg.timezone,
       dayCloseTime: cfg.dayCloseTime,
-      agentsV2Enabled: cfg.agentsV2Enabled,
+      agentsEnabled: cfg.agentsEnabled,
       slackChannelAllowlist: channels,
       uplineMemberIds: cfg.uplineMemberIds ?? [],
       reminderPolicy: cfg.reminderPolicy,
@@ -96,18 +96,18 @@ export const AgentSettings = ({ state }: { state: DashboardState }) => {
     <div className="space-y-4">
       <Panel>
         <PanelHeader
-          title="Agents spine"
+          title="Agents"
           description="Gatherer → Decider → Working. Disable only as an emergency kill switch."
         />
         <label className="mt-3 flex items-center gap-2 text-sm text-ink">
           <input
             type="checkbox"
-            checked={cfg.agentsV2Enabled !== false}
-            onChange={(e) => setDraft({ ...cfg, agentsV2Enabled: e.target.checked })}
+            checked={cfg.agentsEnabled !== false}
+            onChange={(e) => setDraft({ ...cfg, agentsEnabled: e.target.checked })}
           />
-          Agents spine enabled (default on)
+          Agents enabled (default on)
         </label>
-        {cfg.agentsV2Enabled !== false ? (
+        {cfg.agentsEnabled !== false ? (
           <Badge className="mt-2 bg-signal-positive/10 text-signal-positive ring-signal-positive/25">
             Active — Decide + ship-log standup
           </Badge>

@@ -399,7 +399,7 @@ export interface DashboardState {
   };
   ai: { model: string; effort: string };
   agentConfig?: {
-    agentsV2Enabled: boolean;
+    agentsEnabled: boolean;
     timezone: string;
     dayCloseTime: string;
     slackChannelAllowlist: string[];
@@ -454,7 +454,7 @@ export interface OrgAgentConfig {
   orgId: string;
   timezone: string;
   dayCloseTime: string;
-  agentsV2Enabled: boolean;
+  agentsEnabled: boolean;
   slackChannelAllowlist: string[];
   reposInScope: string[];
   deciderPingRoles: string[];

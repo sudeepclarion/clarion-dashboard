@@ -56,7 +56,7 @@ const NAV: NavSection[] = [
         label: "Decide",
         icon: <CalendarDays className="h-4 w-4" />,
         badge: (state) =>
-          state.agentConfig?.agentsV2Enabled !== false
+          state.agentConfig?.agentsEnabled !== false
             ? state.proposals?.open.filter((p) =>
                 ["pending_auth", "waiting_up", "waiting_down"].includes(p.status)
               ).length || undefined
