@@ -314,7 +314,7 @@ const GithubForm = ({
 
 /**
  * One provider's row: connection status, live test, and (for Slack/Jira/GitHub)
- * org-admin credential forms stored per organization.
+ * org-admin credential forms stored per Clarion team (active team in the top bar).
  */
 export const ProviderRow = ({ provider }: { provider: ProviderStatus }) => {
   const test = useDashboardMutation(() => api.integrations.test(provider.id));

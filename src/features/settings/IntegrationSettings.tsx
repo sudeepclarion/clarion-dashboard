@@ -116,7 +116,7 @@ export const IntegrationSettings = ({ state }: { state: DashboardState }) => {
       <Panel>
         <PanelHeader
           title="How connections work"
-          description="Slack, Jira and GitHub credentials are stored for your organization in Settings — no server restart. Other providers still use backend environment variables. Anything unconfigured is absent from the assistant's toolset."
+          description="Slack, Jira and GitHub credentials are stored for the active Clarion team (switch teams in the top bar). Other providers still use backend environment variables. Anything unconfigured is absent from the assistant's toolset."
         />
         <div className="mt-3 flex flex-wrap gap-1.5">
           {categories.map((category) => (
