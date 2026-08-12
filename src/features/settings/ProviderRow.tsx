@@ -140,7 +140,7 @@ const JiraForm = ({
   const [apiToken, setApiToken] = useState("");
   const [projectKey, setProjectKey] = useState("");
   const [boardId, setBoardId] = useState("");
-  const [autoCreate, setAutoCreate] = useState(false);
+  const [autoCreate, setAutoCreate] = useState(true);
   const [open, setOpen] = useState(!configured);
 
   const save = useDashboardMutation(

@@ -8,7 +8,7 @@ import { useDashboardMutation } from "@/lib/hooks/useDashboard";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Callout } from "@/components/ui/Callout";
-import { Input, Select, Textarea } from "@/components/ui/Field";
+import { Input, Select } from "@/components/ui/Field";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
 
 export const AgentSettings = ({ state }: { state: DashboardState }) => {
@@ -23,14 +23,12 @@ export const AgentSettings = ({ state }: { state: DashboardState }) => {
   });
 
   const [draft, setDraft] = useState<Partial<OrgAgentConfig> | null>(null);
-  const [allowlistText, setAllowlistText] = useState("");
   const [goalText, setGoalText] = useState("");
   const [goalHorizon, setGoalHorizon] = useState<"vision" | "yearly" | "quarterly">("quarterly");
 
   useEffect(() => {
     if (!configQuery.data) return;
     setDraft(configQuery.data);
-    setAllowlistText(configQuery.data.slackChannelAllowlist.join("\n"));
   }, [configQuery.data]);
 
   const save = useDashboardMutation(
@@ -38,7 +36,6 @@ export const AgentSettings = ({ state }: { state: DashboardState }) => {
     {
       onSuccess: (data) => {
         setDraft(data);
-        setAllowlistText(data.slackChannelAllowlist.join("\n"));
         void queryClient.invalidateQueries({ queryKey: queryKeys.agentConfig });
         void queryClient.invalidateQueries({ queryKey: queryKeys.state });
       },
@@ -74,15 +71,12 @@ export const AgentSettings = ({ state }: { state: DashboardState }) => {
 
   const persist = () => {
     if (!cfg) return;
-    const channels = allowlistText
-      .split(/[\n,\s]+/)
-      .map((s) => s.trim())
-      .filter(Boolean);
     save.mutate({
       timezone: cfg.timezone,
       dayCloseTime: cfg.dayCloseTime,
       agentsEnabled: cfg.agentsEnabled,
-      slackChannelAllowlist: channels,
+      // Gatherer uses every channel the bot is in — keep allowlist empty.
+      slackChannelAllowlist: [],
       uplineMemberIds: cfg.uplineMemberIds ?? [],
       reminderPolicy: cfg.reminderPolicy,
     });
@@ -159,15 +153,8 @@ export const AgentSettings = ({ state }: { state: DashboardState }) => {
 
       <Panel>
         <PanelHeader
-          title="Slack channel allowlist"
-          description="Gatherer only reads these channel IDs (one per line). Empty = no channel ingress."
-        />
-        <Textarea
-          className="mt-3 font-mono"
-          rows={4}
-          value={allowlistText}
-          onChange={(e) => setAllowlistText(e.target.value)}
-          placeholder="C01234567"
+          title="Slack channel scope"
+          description="Gatherer reads every channel the Clarion bot is a member of. Invite the bot to a channel to include it — there is no separate allowlist."
         />
       </Panel>
 
