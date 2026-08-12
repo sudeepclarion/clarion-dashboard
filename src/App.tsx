@@ -48,14 +48,10 @@ const DashboardApp = () => {
       ) : dashboard.error || !dashboard.data ? (
         <EmptyState
           icon={<AlertTriangle className="h-4 w-4" />}
-          title="Cannot reach the Clarion API"
+          title="Cannot load Clarion"
           description={
-            <>
-              {(dashboard.error as Error | null)?.message ??
-                "The backend did not respond."}{" "}
-              Start it with <code className="font-mono text-[11px]">npm run dev</code> in{" "}
-              <code className="font-mono text-[11px]">clarion-backend</code>.
-            </>
+            (dashboard.error as Error | null)?.message ??
+            "The backend did not respond. Try again or sign out and back in."
           }
           action={
             <Button variant="primary" onClick={() => void dashboard.refetch()}>

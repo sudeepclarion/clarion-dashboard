@@ -6,7 +6,7 @@ import { Field, Input } from "@/components/ui/Field";
 import { Panel } from "@/components/ui/Panel";
 import { api } from "@/lib/api/endpoints";
 import { ApiError } from "@/lib/api/http";
-import { setSessionToken } from "@/lib/auth";
+import { clearActiveTeamId, setSessionToken } from "@/lib/auth";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -21,6 +21,8 @@ export const LoginPage = () => {
     setLoading(true);
     try {
       const result = await api.auth.login(email, password);
+      // Drop any team id from a previous org / wiped DB so the API can bootstrap.
+      clearActiveTeamId();
       setSessionToken(result.token);
       navigate("/", { replace: true });
     } catch (err) {

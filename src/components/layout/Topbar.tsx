@@ -7,6 +7,7 @@ import { queryKeys } from "@/lib/api/queryKeys";
 import type { Capabilities, DashboardState } from "@/lib/api/types";
 import { relativeTime } from "@/lib/format/dates";
 import {
+  clearActiveTeamId,
   clearSessionToken,
   getActiveTeamId,
   setActiveTeamId,
@@ -142,6 +143,7 @@ export const Topbar = ({ state, isRefreshing, onRefresh, onOpenNav, navIcon }: T
           label="Sign out"
           onClick={() => {
             clearSessionToken();
+            clearActiveTeamId();
             window.location.assign("/login");
           }}
         >

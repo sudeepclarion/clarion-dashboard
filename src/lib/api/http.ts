@@ -4,7 +4,7 @@
  * status code or a response body shape.
  */
 
-import { clearSessionToken, getActiveTeamId, getSessionToken } from "@/lib/auth";
+import { clearActiveTeamId, clearSessionToken, getActiveTeamId, getSessionToken } from "@/lib/auth";
 
 export class ApiError extends Error {
   readonly status: number;
@@ -44,6 +44,7 @@ const authHeaders = (): Record<string, string> => {
 
 const redirectToLogin = (): void => {
   clearSessionToken();
+  clearActiveTeamId();
   if (window.location.pathname !== "/login") {
     window.location.assign("/login");
   }
