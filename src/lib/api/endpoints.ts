@@ -33,9 +33,6 @@ import type {
   TaskStatus,
   TeamActivityReport,
   TeamRole,
-  TriageDayReport,
-  TriageRun,
-  TriageRunStart,
   WeeklyReport,
   OrgAgentConfig,
   WorkingMemoryDoc,
@@ -161,16 +158,6 @@ export const api = {
   standups: {
     list: (limit = 30) => http.get<Standup[]>("/standups", { limit }),
     ingest: (text: string) => http.post<Standup>("/standups", { text }),
-  },
-
-  triage: {
-    status: () =>
-      http.get<{ latest: TriageRun | null; awaiting: TriageRun | null }>("/triage/status"),
-    days: (limit = 21) => http.get<TriageDayReport[]>("/triage/days", { limit }),
-    day: (date: string) => http.get<TriageDayReport>(`/triage/days/${date}`),
-    focus: () => http.get<{ focus: string }>("/triage/focus"),
-    saveFocus: (focus: string) => http.put<{ focus: string }>("/triage/focus", { focus }),
-    run: (slot?: string) => http.post<TriageRunStart>("/triage/run", slot ? { slot } : {}),
   },
 
   agents: {

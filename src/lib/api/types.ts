@@ -141,52 +141,6 @@ export interface ReportSummary {
   source?: "manual" | "scheduled";
 }
 
-export interface TriageDecision {
-  kind: "approve_all" | "approve_some" | "edit" | "reject";
-  approvedActionIds: string[];
-  notes: string;
-  rawReply: string;
-  at: string;
-}
-
-export interface TriageDaySlot {
-  slot: string;
-  runId: string;
-  status: string;
-  managerBrief: string;
-  engineeringSummary: string;
-  actionCount: number;
-  decision: TriageDecision | null;
-}
-
-export interface TriageDayReport {
-  orgId: string;
-  date: string;
-  slots: TriageDaySlot[];
-  combinedSummary: string;
-  communicationsDigest: string;
-  updatedAt: string;
-}
-
-export interface TriageRun {
-  id: string;
-  orgId: string;
-  date: string;
-  slot: string;
-  status: string;
-  error: string | null;
-  startedAt: string;
-  finishedAt: string | null;
-}
-
-export interface TriageRunStart {
-  started: true;
-  orgId: string;
-  date: string;
-  slot: string;
-  status: "running";
-}
-
 export interface MeetingChange {
   action: "created" | "updated" | "skipped";
   taskId: string | null;

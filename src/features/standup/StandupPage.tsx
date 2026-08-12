@@ -108,18 +108,13 @@ export const StandupPage = ({ state }: { state: DashboardState }) => {
     [state.standups]
   );
   const today = dailyStandups[0];
-  const agentsV2 = state.agentConfig?.agentsV2Enabled !== false;
 
   return (
     <>
       <PageHeader
         eyebrow="Operate"
         title="Standup"
-        description={
-          agentsV2
-            ? "Ship log from day-close: code (commits/PRs) and non-code signals from Slack/meetings. No morning DMs — Working handles decisions in Slack after Decide runs."
-            : "Each morning at 10:00 IST the bot tells every member what they worked on yesterday (from repos & triage) and asks for today's focus. At 11:00 IST triage publishes this page."
-        }
+        description="Ship log from day-close: code (commits/PRs) and non-code signals from Slack/meetings. Working handles decisions in Slack after Decide runs."
       />
 
       <div className="grid gap-4 xl:grid-cols-5">
@@ -128,15 +123,9 @@ export const StandupPage = ({ state }: { state: DashboardState }) => {
             <PanelHeader
               title={today ? `Team standup · ${today.date}` : "Today's standup"}
               description={
-                agentsV2
-                  ? today?.status === "published"
-                    ? "Published from day-close seal (Gatherer ship log)."
-                    : "Appears after day-close when Agents v2 is enabled."
-                  : today?.status === "collecting"
-                    ? "Check-in DMs are out — waiting on replies. The board view finalizes after 11:00 triage."
-                    : today?.status === "published"
-                      ? "Published from the 11:00 triage run."
-                      : "Appears after the 10:00 check-in (or 11:00 triage if check-in was missed)."
+                today?.status === "published"
+                  ? "Published from day-close seal (Gatherer ship log)."
+                  : "Appears after day-close."
               }
             />
 
@@ -145,11 +134,7 @@ export const StandupPage = ({ state }: { state: DashboardState }) => {
                 className="mt-4"
                 icon={<Coffee className="h-4 w-4" />}
                 title="No standup yet today"
-                description={
-                  agentsV2
-                    ? "Run day-close from Decide (or wait for the scheduled close) to publish the ship log."
-                    : "At 10:00 IST members get a Slack DM with yesterday's inferred work and a question about today's focus."
-                }
+                description="Run day-close from Decide (or wait for the scheduled close) to publish the ship log."
               />
             ) : (
               <>
@@ -178,9 +163,8 @@ export const StandupPage = ({ state }: { state: DashboardState }) => {
           </Panel>
 
           <Callout tone="info">
-            {agentsV2
-              ? "Code entries come from GitHub at day-close; non-code from allowlisted Slack and meetings gathered during the day."
-              : "Someone on leave yesterday can still show engineering activity today — yesterday's column always comes from repos / PRs, not from whether they said they were off."}
+            Code entries come from GitHub at day-close; non-code from allowlisted Slack and meetings
+            gathered during the day.
           </Callout>
         </div>
 

@@ -97,7 +97,7 @@ export const AgentSettings = ({ state }: { state: DashboardState }) => {
       <Panel>
         <PanelHeader
           title="Agents spine"
-          description="Gatherer → Decider → Working is the default. Turn off only as an emergency kill switch (legacy triage is no longer scheduled)."
+          description="Gatherer → Decider → Working. Disable only as an emergency kill switch."
         />
         <label className="mt-3 flex items-center gap-2 text-sm text-ink">
           <input
