@@ -24,4 +24,8 @@ export const queryKeys = {
   triageDay: (date: string) => ["triage", "days", date] as const,
   triageFocus: ["triage", "focus"] as const,
   slackChannels: ["slack", "channels"] as const,
+  agentConfig: ["agents", "config"] as const,
+  workingMemory: ["agents", "working-memory"] as const,
+  agentGoals: ["agents", "goals"] as const,
+  weeklyReports: ["agents", "weekly-reports"] as const,
 };

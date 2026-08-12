@@ -2,6 +2,7 @@ import { useSearchParams } from "react-router-dom";
 import type { DashboardState } from "@/lib/api/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Tabs } from "@/components/ui/Tabs";
+import { AgentSettings } from "./AgentSettings";
 import { AuditLog } from "./AuditLog";
 import { IntegrationSettings } from "./IntegrationSettings";
 import { TeamSettings } from "./TeamSettings";
@@ -22,7 +23,7 @@ export const SettingsPage = ({ state }: { state: DashboardState }) => {
       <PageHeader
         eyebrow="Configuration"
         title="Settings"
-        description="Team, connections and the audit trail."
+        description="Team, agents, connections and the audit trail."
       />
 
       <Tabs
@@ -31,12 +32,14 @@ export const SettingsPage = ({ state }: { state: DashboardState }) => {
         onChange={setTab}
         items={[
           { id: "team", label: "Team", count: state.members.length },
+          { id: "agents", label: "Agents" },
           { id: "integrations", label: "Integrations" },
           { id: "activity", label: "Audit log", count: state.activity.length },
         ]}
       />
 
       {tab === "team" ? <TeamSettings state={state} /> : null}
+      {tab === "agents" ? <AgentSettings state={state} /> : null}
       {tab === "integrations" ? <IntegrationSettings state={state} /> : null}
       {tab === "activity" ? <AuditLog state={state} /> : null}
     </>

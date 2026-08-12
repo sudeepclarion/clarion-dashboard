@@ -19,25 +19,38 @@ const MemberCard = ({ entry }: { entry: StandupMemberEntry }) => (
       <span className="text-sm font-medium text-ink">{entry.member}</span>
       {entry.onLeave ? (
         <Badge className="bg-signal-warning/10 text-signal-warning ring-signal-warning/25">On leave</Badge>
+      ) : entry.code?.length || entry.nonCode?.length || entry.yesterday?.length ? (
+        <Badge className="bg-signal-positive/10 text-signal-positive ring-signal-positive/25">Ship log</Badge>
       ) : entry.repliedAt ? (
         <Badge className="bg-signal-positive/10 text-signal-positive ring-signal-positive/25">Replied</Badge>
-      ) : entry.dmSentAt ? (
-        <Badge>Awaiting reply</Badge>
       ) : (
-        <Badge className="bg-ink-faint/10 text-ink-faint ring-ink-faint/20">Pending DM</Badge>
+        <Badge className="bg-ink-faint/10 text-ink-faint ring-ink-faint/20">No activity</Badge>
       )}
     </div>
 
     <div className="mt-3 grid gap-3 sm:grid-cols-2">
       <div>
-        <p className="text-2xs font-medium uppercase tracking-wide text-ink-faint">Yesterday</p>
-        {entry.yesterday?.length ? (
+        <p className="text-2xs font-medium uppercase tracking-wide text-ink-faint">Shipped</p>
+        {entry.code?.length || entry.nonCode?.length || entry.yesterday?.length ? (
           <ul className="mt-1.5 space-y-1">
-            {entry.yesterday.map((line, index) => (
-              <li key={index} className="text-2xs leading-relaxed text-ink-muted">
-                {line}
+            {(entry.code ?? []).map((item, index) => (
+              <li key={`c-${index}`} className="text-2xs leading-relaxed text-ink-muted">
+                {item.repo ? <span className="font-mono text-cyan-clarion">{item.repo} · </span> : null}
+                {item.summary}
               </li>
             ))}
+            {(entry.nonCode ?? []).map((item, index) => (
+              <li key={`n-${index}`} className="text-2xs leading-relaxed text-ink-muted">
+                {item.summary}
+              </li>
+            ))}
+            {!entry.code?.length && !entry.nonCode?.length
+              ? (entry.yesterday ?? []).map((line, index) => (
+                  <li key={index} className="text-2xs leading-relaxed text-ink-muted">
+                    {line}
+                  </li>
+                ))
+              : null}
           </ul>
         ) : (
           <p className="mt-1.5 text-2xs text-ink-faint">No clear activity detected</p>
@@ -95,13 +108,18 @@ export const StandupPage = ({ state }: { state: DashboardState }) => {
     [state.standups]
   );
   const today = dailyStandups[0];
+  const agentsV2 = state.agentConfig?.agentsV2Enabled === true;
 
   return (
     <>
       <PageHeader
         eyebrow="Operate"
         title="Standup"
-        description="Each morning at 10:00 IST the bot tells every member what they worked on yesterday (from repos & triage) and asks for today's focus. At 11:00 IST triage publishes this page — leave is recorded as today's focus while yesterday still updates from git."
+        description={
+          agentsV2
+            ? "Ship log from day-close: code (commits/PRs) and non-code signals from Slack/meetings. No morning DMs — Working handles decisions in Slack after Decide runs."
+            : "Each morning at 10:00 IST the bot tells every member what they worked on yesterday (from repos & triage) and asks for today's focus. At 11:00 IST triage publishes this page."
+        }
       />
 
       <div className="grid gap-4 xl:grid-cols-5">
@@ -110,11 +128,15 @@ export const StandupPage = ({ state }: { state: DashboardState }) => {
             <PanelHeader
               title={today ? `Team standup · ${today.date}` : "Today's standup"}
               description={
-                today?.status === "collecting"
-                  ? "Check-in DMs are out — waiting on replies. The board view finalizes after 11:00 triage."
-                  : today?.status === "published"
-                    ? "Published from the 11:00 triage run."
-                    : "Appears after the 10:00 check-in (or 11:00 triage if check-in was missed)."
+                agentsV2
+                  ? today?.status === "published"
+                    ? "Published from day-close seal (Gatherer ship log)."
+                    : "Appears after day-close when Agents v2 is enabled."
+                  : today?.status === "collecting"
+                    ? "Check-in DMs are out — waiting on replies. The board view finalizes after 11:00 triage."
+                    : today?.status === "published"
+                      ? "Published from the 11:00 triage run."
+                      : "Appears after the 10:00 check-in (or 11:00 triage if check-in was missed)."
               }
             />
 
@@ -123,7 +145,11 @@ export const StandupPage = ({ state }: { state: DashboardState }) => {
                 className="mt-4"
                 icon={<Coffee className="h-4 w-4" />}
                 title="No standup yet today"
-                description="At 10:00 IST members get a Slack DM with yesterday's inferred work and a question about today's focus."
+                description={
+                  agentsV2
+                    ? "Run day-close from Decide (or wait for the scheduled close) to publish the ship log."
+                    : "At 10:00 IST members get a Slack DM with yesterday's inferred work and a question about today's focus."
+                }
               />
             ) : (
               <>
@@ -133,7 +159,13 @@ export const StandupPage = ({ state }: { state: DashboardState }) => {
                     {(today.members ?? []).filter((m) => m.onLeave).length} on leave
                   </Badge>
                   <Badge>
-                    {(today.members ?? []).filter((m) => m.repliedAt && !m.onLeave).length} focus replies
+                    {(today.members ?? []).filter(
+                      (m) =>
+                        (m.code?.length ?? 0) > 0 ||
+                        (m.nonCode?.length ?? 0) > 0 ||
+                        (m.yesterday?.length ?? 0) > 0
+                    ).length}{" "}
+                    with ship log
                   </Badge>
                 </div>
                 <ul className="mt-4 space-y-3">
@@ -146,8 +178,9 @@ export const StandupPage = ({ state }: { state: DashboardState }) => {
           </Panel>
 
           <Callout tone="info">
-            Someone on leave yesterday can still show engineering activity today — yesterday&apos;s column always
-            comes from repos / PRs, not from whether they said they were off.
+            {agentsV2
+              ? "Code entries come from GitHub at day-close; non-code from allowlisted Slack and meetings gathered during the day."
+              : "Someone on leave yesterday can still show engineering activity today — yesterday's column always comes from repos / PRs, not from whether they said they were off."}
           </Callout>
         </div>
 

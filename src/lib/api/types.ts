@@ -116,6 +116,8 @@ export interface StandupMemberEntry {
   repliedAt: string | null;
   replyRaw: string | null;
   dmSentAt: string | null;
+  code?: Array<{ shaOrPr: string; repo: string; summary: string }>;
+  nonCode?: Array<{ summary: string; evidenceRef?: string }>;
 }
 
 export interface Standup {
@@ -442,6 +444,80 @@ export interface DashboardState {
     github: { repos: AllowedRepo[] };
   };
   ai: { model: string; effort: string };
+  agentConfig?: {
+    agentsV2Enabled: boolean;
+    timezone: string;
+    dayCloseTime: string;
+    slackChannelAllowlist: string[];
+    uplineMemberIds: string[];
+  };
+  proposals?: {
+    open: AgentProposal[];
+    latestDecider: DeciderPlan | null;
+    recentlyDone: Array<{ at: string; summary: string; proposalId?: string; taskIds?: string[] }>;
+    conflicts: Array<{ at: string; summary: string; waitingOn?: string }>;
+  };
+}
+
+export type AgentProposalStatus =
+  | "pending_auth"
+  | "waiting_up"
+  | "waiting_down"
+  | "approved"
+  | "executed"
+  | "rejected"
+  | "deferred";
+
+export interface AgentProposal {
+  id: string;
+  kind: string;
+  title: string;
+  description: string;
+  suggestedAssigneeId?: string;
+  suggestedDue?: string;
+  evidenceRefs: string[];
+  needsAuthFrom: string[];
+  status: AgentProposalStatus;
+  authNotes?: string;
+  waitingOn?: string;
+}
+
+export interface DeciderPlan {
+  date: string;
+  deciderRunAt: string;
+  solved: Array<{ summary: string; evidenceRefs: string[]; personIds: string[] }>;
+  notSolved: Array<{ summary: string; why: string; evidenceRefs: string[] }>;
+  proposals: AgentProposal[];
+  pingPlan: Array<{
+    toPersonId: string;
+    role: string;
+    messageOutline: string;
+    proposalIds: string[];
+  }>;
+}
+
+export interface OrgAgentConfig {
+  orgId: string;
+  timezone: string;
+  dayCloseTime: string;
+  agentsV2Enabled: boolean;
+  slackChannelAllowlist: string[];
+  reposInScope: string[];
+  deciderPingRoles: string[];
+  uplineMemberIds: string[];
+  reminderPolicy: { remindPendingAuthHours: number };
+  updatedAt: string;
+}
+
+export interface WorkingMemoryDoc {
+  orgId: string;
+  teamId: string;
+  updatedAt: string;
+  latestDecider: DeciderPlan | null;
+  openProposals: AgentProposal[];
+  recentlyDone: Array<{ at: string; summary: string; proposalId?: string; taskIds?: string[] }>;
+  conflicts: Array<{ at: string; summary: string; waitingOn?: string }>;
+  notes: string[];
 }
 
 export interface Page<T> {

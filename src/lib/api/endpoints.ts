@@ -37,6 +37,10 @@ import type {
   TriageRun,
   TriageRunStart,
   WeeklyReport,
+  OrgAgentConfig,
+  WorkingMemoryDoc,
+  DeciderPlan,
+  AgentProposal,
 } from "./types";
 
 export type AuthUserRole = "admin" | "member";
@@ -167,6 +171,43 @@ export const api = {
     focus: () => http.get<{ focus: string }>("/triage/focus"),
     saveFocus: (focus: string) => http.put<{ focus: string }>("/triage/focus", { focus }),
     run: (slot?: string) => http.post<TriageRunStart>("/triage/run", slot ? { slot } : {}),
+  },
+
+  agents: {
+    config: () => http.get<OrgAgentConfig>("/agents/config"),
+    saveConfig: (patch: Partial<OrgAgentConfig>) =>
+      http.patch<OrgAgentConfig>("/agents/config", patch),
+    workingMemory: () => http.get<WorkingMemoryDoc>("/agents/working-memory"),
+    proposals: () =>
+      http.get<{
+        latestDecider: DeciderPlan | null;
+        openProposals: AgentProposal[];
+        recentlyDone: WorkingMemoryDoc["recentlyDone"];
+        conflicts: WorkingMemoryDoc["conflicts"];
+      }>("/agents/proposals"),
+    dayClose: (date?: string) =>
+      http.post<{ date: string; proposalCount: number }>(
+        "/agents/day-close",
+        date ? { date } : {}
+      ),
+    goals: () => http.get<Array<{ orgId: string; scope: string; scopeId: string; horizon: string; text: string }>>("/agents/goals"),
+    saveGoal: (body: {
+      scope: string;
+      scopeId: string;
+      horizon: string;
+      text: string;
+    }) => http.put("/agents/goals", body),
+    weeklyReports: () =>
+      http.get<
+        Array<{
+          orgId: string;
+          teamId: string;
+          weekStart: string;
+          weekEnd: string;
+          summary: string;
+          executionCount: number;
+        }>
+      >("/agents/weekly-reports"),
   },
 
   reports: {

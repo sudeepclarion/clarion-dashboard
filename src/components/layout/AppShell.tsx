@@ -51,7 +51,17 @@ const NAV: NavSection[] = [
         badge: (state) => state.metrics.blocked || undefined,
       },
       { to: "/standup", label: "Standup", icon: <ClipboardList className="h-4 w-4" /> },
-      { to: "/daily", label: "Daily", icon: <CalendarDays className="h-4 w-4" /> },
+      {
+        to: "/daily",
+        label: "Decide",
+        icon: <CalendarDays className="h-4 w-4" />,
+        badge: (state) =>
+          state.agentConfig?.agentsV2Enabled
+            ? state.proposals?.open.filter((p) =>
+                ["pending_auth", "waiting_up", "waiting_down"].includes(p.status)
+              ).length || undefined
+            : undefined,
+      },
       { to: "/meetings", label: "Meetings", icon: <Video className="h-4 w-4" /> },
       { to: "/sprints", label: "Sprints", icon: <CalendarRange className="h-4 w-4" /> },
     ],
