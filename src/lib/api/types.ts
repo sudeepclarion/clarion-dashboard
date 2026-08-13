@@ -428,7 +428,9 @@ export interface AgentProposal {
   title: string;
   description: string;
   suggestedAssigneeId?: string;
+  whyThisPerson?: string;
   suggestedDue?: string;
+  relatedTicketKeys?: string[];
   evidenceRefs: string[];
   needsAuthFrom: string[];
   status: AgentProposalStatus;

@@ -29,24 +29,43 @@ const statusTone = (status: string): string => {
   return "bg-base-900/60 text-ink-muted";
 };
 
-const ProposalList = ({ title, items }: { title: string; items: AgentProposal[] }) => (
+const ProposalList = ({
+  title,
+  items,
+  memberName,
+}: {
+  title: string;
+  items: AgentProposal[];
+  memberName: (id?: string) => string | null;
+}) => (
   <Panel>
     <PanelHeader title={title} description={`${items.length} item(s)`} />
     {items.length ? (
       <ul className="mt-3 space-y-2">
-        {items.map((p) => (
-          <li key={p.id} className="rounded-lg border border-hairline bg-base-900/30 p-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium text-ink">{p.title}</span>
-              <Badge className={statusTone(p.status)}>{p.status.replace(/_/g, " ")}</Badge>
-              <Badge>{p.kind}</Badge>
-            </div>
-            <p className="mt-1 text-2xs text-ink-muted">{p.description}</p>
-            {p.waitingOn ? (
-              <p className="mt-1 text-2xs text-ink-faint">Waiting on {p.waitingOn}</p>
-            ) : null}
-          </li>
-        ))}
+        {items.map((p) => {
+          const owner = memberName(p.suggestedAssigneeId);
+          return (
+            <li key={p.id} className="rounded-lg border border-hairline bg-base-900/30 p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-medium text-ink">{p.title}</span>
+                <Badge className={statusTone(p.status)}>{p.status.replace(/_/g, " ")}</Badge>
+                <Badge>{p.kind}</Badge>
+                {owner ? <Badge className="text-cyan-clarion">→ {owner}</Badge> : null}
+                {p.suggestedDue ? <Badge>due {p.suggestedDue}</Badge> : null}
+              </div>
+              <p className="mt-1 text-2xs text-ink-muted">{p.description}</p>
+              {p.whyThisPerson ? (
+                <p className="mt-1 text-2xs text-ink-faint">Why {owner ?? "owner"}: {p.whyThisPerson}</p>
+              ) : null}
+              {p.relatedTicketKeys?.length ? (
+                <p className="mt-1 text-2xs text-ink-faint">Tickets: {p.relatedTicketKeys.join(", ")}</p>
+              ) : null}
+              {p.waitingOn ? (
+                <p className="mt-1 text-2xs text-ink-faint">Waiting on {p.waitingOn}</p>
+              ) : null}
+            </li>
+          );
+        })}
       </ul>
     ) : (
       <p className="mt-3 text-2xs text-ink-faint">None</p>
@@ -92,6 +111,8 @@ export const DailyPage = ({ state }: { state: DashboardState }) => {
   const proposals = state.proposals;
   const open = proposals?.open ?? [];
   const latest = proposals?.latestDecider ?? null;
+  const memberName = (id?: string): string | null =>
+    id ? state.members.find((m) => m.id === id)?.name ?? null : null;
 
   const wm = useQuery({
     queryKey: queryKeys.workingMemory,
@@ -157,7 +178,7 @@ export const DailyPage = ({ state }: { state: DashboardState }) => {
       )}
 
       <div className="mb-4 grid gap-4 xl:grid-cols-2">
-        <ProposalList title="Open proposals" items={open} />
+        <ProposalList title="Open proposals" items={open} memberName={memberName} />
         <Panel>
           <PanelHeader
             title="Working memory"
