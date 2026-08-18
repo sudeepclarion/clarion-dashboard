@@ -436,6 +436,7 @@ export interface AgentProposal {
   status: AgentProposalStatus;
   authNotes?: string;
   waitingOn?: string;
+  proposedAt?: string;
 }
 
 export interface DeciderPlan {
@@ -458,10 +459,16 @@ export interface OrgAgentConfig {
   dayCloseTime: string;
   agentsEnabled: boolean;
   slackChannelAllowlist: string[];
+  /** Slack channel IDs that receive the day-close ship-log post. */
+  standupPostChannelIds: string[];
   reposInScope: string[];
   deciderPingRoles: string[];
   uplineMemberIds: string[];
-  reminderPolicy: { remindPendingAuthHours: number };
+  reminderPolicy: {
+    remindPendingAuthHours: number;
+    autoApproveOnTimeout: boolean;
+    autoApproveTimeoutHours: number;
+  };
   updatedAt: string;
 }
 

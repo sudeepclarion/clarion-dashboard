@@ -77,8 +77,13 @@ export const AgentSettings = ({ state }: { state: DashboardState }) => {
       agentsEnabled: cfg.agentsEnabled,
       // Gatherer uses every channel the bot is in — keep allowlist empty.
       slackChannelAllowlist: [],
+      standupPostChannelIds: cfg.standupPostChannelIds ?? [],
       uplineMemberIds: cfg.uplineMemberIds ?? [],
-      reminderPolicy: cfg.reminderPolicy,
+      reminderPolicy: {
+        remindPendingAuthHours: cfg.reminderPolicy?.remindPendingAuthHours ?? 24,
+        autoApproveOnTimeout: Boolean(cfg.reminderPolicy?.autoApproveOnTimeout),
+        autoApproveTimeoutHours: cfg.reminderPolicy?.autoApproveTimeoutHours ?? 2,
+      },
     });
   };
 
@@ -143,12 +148,59 @@ export const AgentSettings = ({ state }: { state: DashboardState }) => {
               onChange={(e) =>
                 setDraft({
                   ...cfg,
-                  reminderPolicy: { remindPendingAuthHours: Number(e.target.value) || 4 },
+                  reminderPolicy: {
+                    remindPendingAuthHours: Number(e.target.value) || 4,
+                    autoApproveOnTimeout: Boolean(cfg.reminderPolicy?.autoApproveOnTimeout),
+                    autoApproveTimeoutHours: cfg.reminderPolicy?.autoApproveTimeoutHours ?? 2,
+                  },
                 })
               }
             />
           </div>
         </div>
+        <label className="mt-4 flex items-center gap-2 text-sm text-ink">
+          <input
+            type="checkbox"
+            checked={Boolean(cfg.reminderPolicy?.autoApproveOnTimeout)}
+            onChange={(e) =>
+              setDraft({
+                ...cfg,
+                reminderPolicy: {
+                  remindPendingAuthHours: cfg.reminderPolicy?.remindPendingAuthHours ?? 24,
+                  autoApproveOnTimeout: e.target.checked,
+                  autoApproveTimeoutHours: cfg.reminderPolicy?.autoApproveTimeoutHours ?? 2,
+                },
+              })
+            }
+          />
+          Auto approve on timeout
+        </label>
+        <p className="mt-1 text-2xs text-ink-faint">
+          If a manager does not approve/reject Decide proposals, auto-approve them after the timeout
+          below (pending_auth only — not pushback/upline).
+        </p>
+        {cfg.reminderPolicy?.autoApproveOnTimeout ? (
+          <div className="mt-3 max-w-xs">
+            <label className="text-2xs text-ink-faint">Auto-approve timeout (hours)</label>
+            <Input
+              className="mt-1"
+              type="number"
+              min={0.25}
+              step={0.25}
+              value={cfg.reminderPolicy?.autoApproveTimeoutHours ?? 2}
+              onChange={(e) =>
+                setDraft({
+                  ...cfg,
+                  reminderPolicy: {
+                    remindPendingAuthHours: cfg.reminderPolicy?.remindPendingAuthHours ?? 24,
+                    autoApproveOnTimeout: true,
+                    autoApproveTimeoutHours: Number(e.target.value) || 2,
+                  },
+                })
+              }
+            />
+          </div>
+        ) : null}
       </Panel>
 
       <Panel>
