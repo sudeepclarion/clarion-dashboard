@@ -23,7 +23,7 @@ const MemberCard = ({ entry }: { entry: StandupMemberEntry }) => (
       <Avatar name={entry.member} size="sm" />
       <span className="text-sm font-medium text-ink">{entry.member}</span>
       {entry.onLeave ? (
-        <Badge className="bg-signal-warning/10 text-signal-warning ring-signal-warning/25">On leave</Badge>
+        <Badge className="bg-signal-caution/10 text-signal-caution ring-signal-caution/25">On leave</Badge>
       ) : entry.code?.length || entry.nonCode?.length || entry.yesterday?.length ? (
         <Badge className="bg-signal-positive/10 text-signal-positive ring-signal-positive/25">Ship log</Badge>
       ) : entry.repliedAt ? (

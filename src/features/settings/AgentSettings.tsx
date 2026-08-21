@@ -111,7 +111,7 @@ export const AgentSettings = ({ state }: { state: DashboardState }) => {
             Active — Decide + ship-log standup
           </Badge>
         ) : (
-          <Badge className="mt-2 bg-signal-danger/10 text-signal-danger ring-signal-danger/25">
+          <Badge className="mt-2 bg-signal-critical/10 text-signal-critical ring-signal-critical/25">
             Disabled — day-close / gather / working DMs off
           </Badge>
         )}

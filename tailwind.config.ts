@@ -1,47 +1,47 @@
 import type { Config } from "tailwindcss";
 
 /**
- * The palette is lifted verbatim from the Clarion marketing site so the product
- * and the landing page are visibly the same system. The only additions are the
- * semantic status colours the dashboard needs (a board has states a landing page
- * does not), chosen to sit correctly against the same dark surfaces.
+ * B&W product chrome via CSS variables (light :root / dark .dark).
+ * Status colors stay fixed green / yellow / red.
+ * cyan-clarion / violet-electric are rebound to the accent (ink) so existing
+ * class names keep working without a mass rewrite.
  */
 const config: Config = {
+  darkMode: "class",
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
         base: {
-          900: "#07090E",
-          800: "#0B0F17",
-          700: "#0F1420",
+          900: "rgb(var(--base-900) / <alpha-value>)",
+          800: "rgb(var(--base-800) / <alpha-value>)",
+          700: "rgb(var(--base-700) / <alpha-value>)",
         },
         surface: {
-          DEFAULT: "#121824",
-          raised: "#161D2B",
-          overlay: "#1A2233",
+          DEFAULT: "rgb(var(--surface) / <alpha-value>)",
+          raised: "rgb(var(--surface-raised) / <alpha-value>)",
+          overlay: "rgb(var(--surface-overlay) / <alpha-value>)",
         },
-        hairline: "#1E293B",
-        cyan: { clarion: "#00F2FE" },
-        violet: { electric: "#7000FF" },
+        hairline: "rgb(var(--hairline) / <alpha-value>)",
+        cyan: { clarion: "rgb(var(--accent) / <alpha-value>)" },
+        violet: { electric: "rgb(var(--accent) / <alpha-value>)" },
         ink: {
-          DEFAULT: "#F8FAFC",
-          muted: "#94A3B8",
-          faint: "#64748B",
+          DEFAULT: "rgb(var(--ink) / <alpha-value>)",
+          muted: "rgb(var(--ink-muted) / <alpha-value>)",
+          faint: "rgb(var(--ink-faint) / <alpha-value>)",
         },
-        // Board and health semantics.
         state: {
           backlog: "#64748B",
-          progress: "#38BDF8",
-          review: "#A78BFA",
-          blocked: "#FB7185",
-          done: "#34D399",
+          progress: "#71717A",
+          review: "#A1A1AA",
+          blocked: "#F43F5E",
+          done: "#16A34A",
         },
         signal: {
-          positive: "#34D399",
-          caution: "#FBBF24",
+          positive: "#16A34A",
+          caution: "#EAB308",
           critical: "#F43F5E",
-          info: "#38BDF8",
+          info: "#71717A",
         },
       },
       fontFamily: {
@@ -49,13 +49,12 @@ const config: Config = {
         mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       fontSize: {
-        // Dense, enterprise-scale type ramp.
         "2xs": ["0.6875rem", { lineHeight: "1rem" }],
       },
       boxShadow: {
-        glow: "0 0 0 1px rgba(0,242,254,0.25), 0 0 40px -8px rgba(0,242,254,0.35)",
-        lift: "0 24px 60px -20px rgba(0,0,0,0.8)",
-        panel: "0 1px 0 0 rgba(248,250,252,0.03) inset, 0 12px 32px -24px rgba(0,0,0,0.9)",
+        glow: "0 0 0 1px rgb(var(--accent) / 0.2), 0 0 32px -8px rgb(var(--accent) / 0.15)",
+        lift: "0 24px 60px -20px rgba(0,0,0,0.35)",
+        panel: "0 1px 0 0 rgb(var(--ink) / 0.04) inset, 0 12px 32px -24px rgba(0,0,0,0.25)",
       },
       keyframes: {
         "fade-in": {

@@ -6,11 +6,10 @@ type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "sm" | "md" | "lg";
 
 const VARIANTS: Record<Variant, string> = {
-  // The one gradient in the product, reserved for the primary action on a screen.
   primary:
-    "bg-gradient-to-r from-cyan-clarion to-violet-electric text-base-900 font-semibold hover:brightness-110 disabled:from-cyan-clarion/40 disabled:to-violet-electric/40",
+    "bg-ink text-base-900 font-semibold hover:opacity-90 disabled:bg-ink/40 disabled:text-base-900/70",
   secondary:
-    "bg-surface-raised text-ink ring-1 ring-inset ring-hairline hover:bg-surface-overlay hover:ring-cyan-clarion/30",
+    "bg-surface-raised text-ink ring-1 ring-inset ring-hairline hover:bg-surface-overlay hover:ring-ink/25",
   ghost: "text-ink-muted hover:bg-surface-raised hover:text-ink",
   danger:
     "bg-signal-critical/10 text-signal-critical ring-1 ring-inset ring-signal-critical/30 hover:bg-signal-critical/20",

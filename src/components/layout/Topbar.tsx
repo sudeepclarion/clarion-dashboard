@@ -14,6 +14,7 @@ import {
 } from "@/lib/auth";
 import { Dot } from "@/components/ui/Badge";
 import { IconButton } from "@/components/ui/Button";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Select } from "@/components/ui/Field";
 
 const INTEGRATIONS: Array<{ key: keyof Capabilities; label: string }> = [
@@ -123,9 +124,13 @@ export const Topbar = ({ state, isRefreshing, onRefresh, onOpenNav, navIcon }: T
           <p className="truncate text-xs text-ink-muted">
             <span className="font-medium text-ink">{state?.metrics.openTasks ?? 0} open</span>
             <span className="mx-1.5 text-ink-faint">·</span>
-            {state?.metrics.overdue ?? 0} overdue
+            <span className={(state?.metrics.overdue ?? 0) > 0 ? "text-signal-critical" : undefined}>
+              {state?.metrics.overdue ?? 0} overdue
+            </span>
             <span className="mx-1.5 text-ink-faint">·</span>
-            {state?.metrics.blocked ?? 0} blocked
+            <span className={(state?.metrics.blocked ?? 0) > 0 ? "text-signal-caution" : undefined}>
+              {state?.metrics.blocked ?? 0} blocked
+            </span>
           </p>
         </div>
       </div>
@@ -137,8 +142,9 @@ export const Topbar = ({ state, isRefreshing, onRefresh, onOpenNav, navIcon }: T
           {state ? `updated ${relativeTime(state.generatedAt)}` : "connecting…"}
         </span>
         <IconButton label="Refresh data" onClick={onRefresh} disabled={isRefreshing}>
-          <RefreshCw className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin text-cyan-clarion")} />
+          <RefreshCw className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin text-ink")} />
         </IconButton>
+        <ThemeToggle />
         <IconButton
           label="Sign out"
           onClick={() => {

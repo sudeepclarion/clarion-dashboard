@@ -21,7 +21,7 @@ const statusTone = (status: string): string => {
     return "bg-cyan-clarion/10 text-cyan-clarion ring-cyan-clarion/25";
   }
   if (status === "rejected") {
-    return "bg-signal-danger/10 text-signal-danger ring-signal-danger/25";
+    return "bg-signal-critical/10 text-signal-critical ring-signal-critical/25";
   }
   if (status === "deferred") {
     return "bg-violet-electric/10 text-violet-electric ring-violet-electric/25";

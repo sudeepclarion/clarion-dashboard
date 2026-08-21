@@ -3,6 +3,37 @@
 @tailwind utilities;
 
 @layer base {
+  /* Light (default when .dark is absent) */
+  :root {
+    --base-900: 255 255 255;
+    --base-800: 250 250 250;
+    --base-700: 244 244 245;
+    --surface: 255 255 255;
+    --surface-raised: 250 250 250;
+    --surface-overlay: 244 244 245;
+    --hairline: 228 228 231;
+    --ink: 9 9 11;
+    --ink-muted: 82 82 91;
+    --ink-faint: 113 113 122;
+    --accent: 9 9 11;
+    --body-wash: none;
+  }
+
+  /* Dark */
+  .dark {
+    --base-900: 7 9 14;
+    --base-800: 11 15 23;
+    --base-700: 15 20 32;
+    --surface: 18 24 36;
+    --surface-raised: 22 29 43;
+    --surface-overlay: 26 34 51;
+    --hairline: 39 39 42;
+    --ink: 248 250 252;
+    --ink-muted: 161 161 170;
+    --ink-faint: 113 113 122;
+    --accent: 248 250 252;
+  }
+
   * {
     @apply border-hairline;
   }
@@ -15,23 +46,24 @@
 
   body {
     @apply bg-base-800 text-ink antialiased;
-    /* Same two-light wash as the marketing site, muted for long working sessions. */
-    background-image:
-      radial-gradient(70rem 32rem at 12% -8rem, rgba(112, 0, 255, 0.1), transparent 60%),
-      radial-gradient(56rem 28rem at 92% 0%, rgba(0, 242, 254, 0.06), transparent 60%),
-      linear-gradient(180deg, #0b0f17 0%, #090c14 60%, #07090e 100%);
+    background-image: none;
     background-attachment: fixed;
     font-feature-settings: "cv11", "ss01";
     font-variant-numeric: tabular-nums;
   }
 
+  .dark body,
+  body {
+    background-color: rgb(var(--base-800));
+  }
+
   ::selection {
-    background: rgba(0, 242, 254, 0.26);
-    color: #f8fafc;
+    background: rgb(var(--accent) / 0.18);
+    color: rgb(var(--ink));
   }
 
   :focus-visible {
-    outline: 2px solid #00f2fe;
+    outline: 2px solid rgb(var(--accent));
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -42,7 +74,6 @@
     text-wrap: balance;
   }
 
-  /* Slim, unobtrusive scrollbars — dense tables scroll a lot. */
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -53,22 +84,21 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #1e293b;
+    background: rgb(var(--hairline));
     border-radius: 999px;
     border: 2px solid transparent;
     background-clip: content-box;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #2b3a52;
+    background: rgb(var(--ink-faint));
     background-clip: content-box;
   }
 }
 
 @layer components {
-  /* The one panel treatment every surface uses. */
   .panel {
-    @apply rounded-xl border border-hairline bg-surface/70 shadow-panel backdrop-blur-sm;
+    @apply rounded-xl border border-hairline bg-surface/80 shadow-panel backdrop-blur-sm;
   }
 
   .panel-raised {
@@ -80,23 +110,29 @@
   }
 
   .gradient-text {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(100deg, #00f2fe 0%, #7000ff 55%, #00f2fe 100%);
+    @apply text-ink;
+    background-image: none;
+    -webkit-text-fill-color: unset;
+    color: rgb(var(--ink));
   }
 
   .hairline-x {
-    background: linear-gradient(90deg, transparent, #1e293b 12%, #1e293b 88%, transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--hairline)) 12%,
+      rgb(var(--hairline)) 88%,
+      transparent
+    );
   }
 
-  /* Faint grid used behind empty states and the overview header. */
   .grid-backdrop {
     background-image:
-      linear-gradient(to right, rgba(30, 41, 59, 0.35) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(30, 41, 59, 0.35) 1px, transparent 1px);
+      linear-gradient(to right, rgb(var(--hairline) / 0.55) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(var(--hairline) / 0.55) 1px, transparent 1px);
     background-size: 48px 48px;
   }
 
-  /* Rendered Markdown (AI reports and chat replies). */
   .prose-clarion {
     @apply text-sm leading-relaxed text-ink-muted;
   }
@@ -126,11 +162,11 @@
   }
 
   .prose-clarion code {
-    @apply rounded bg-base-900 px-1.5 py-0.5 font-mono text-2xs text-cyan-clarion;
+    @apply rounded bg-base-900 px-1.5 py-0.5 font-mono text-2xs text-ink;
   }
 
   .prose-clarion a {
-    @apply text-cyan-clarion underline decoration-cyan-clarion/30 underline-offset-2 hover:decoration-cyan-clarion;
+    @apply text-ink underline decoration-ink/30 underline-offset-2 hover:decoration-ink;
   }
 
   .prose-clarion table {

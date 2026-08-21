@@ -1,41 +1,45 @@
 import { cn } from "@/lib/cn";
 
-/** Minimal medieval clarion (straight trumpet) — cup mouthpiece, long bore, flared bell. */
+/** Minimal B&W mark — double chevron up (≫ rotated). */
 export const LogoMark = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 40 40" className={cn("h-8 w-8", className)} role="img" aria-label="Clarion" focusable="false">
-    <defs>
-      <linearGradient id="clarion-mark" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#00F2FE" />
-        <stop offset="1" stopColor="#7000FF" />
-      </linearGradient>
-    </defs>
-    <rect x="0.75" y="0.75" width="38.5" height="38.5" rx="11" fill="#0B0F17" stroke="#1E293B" strokeWidth="1.5" />
-    <path fill="url(#clarion-mark)" d="M6.2 17c-1.2 0-1.2 6 0 6l2.9-1.35V18.35z" />
-    <rect x="8.8" y="18" width="15.6" height="4" rx="1" fill="url(#clarion-mark)" />
-    <rect x="12.6" y="18" width="1.15" height="4" fill="#0B0F17" opacity="0.55" />
-    <rect x="16.3" y="18" width="1.15" height="4" fill="#0B0F17" opacity="0.55" />
-    <rect x="20" y="18" width="1.15" height="4" fill="#0B0F17" opacity="0.55" />
-    <path fill="url(#clarion-mark)" d="M24.2 17.2c2.8-0.85 5.7-2.55 8.1-3.85v13.3c-2.4-1.3-5.3-3-8.1-3.85z" />
-    <ellipse cx="31.5" cy="20" rx="1.35" ry="5.3" fill="#0B0F17" />
-    <path
-      d="M34.1 13.8c1.9 2.35 1.9 9.95 0 12.3"
-      fill="none"
-      stroke="url(#clarion-mark)"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      opacity="0.78"
+  <svg
+    viewBox="0 0 40 40"
+    className={cn("h-8 w-8 text-ink", className)}
+    role="img"
+    aria-label="Clarion"
+    focusable="false"
+  >
+    <rect
+      x="0.75"
+      y="0.75"
+      width="38.5"
+      height="38.5"
+      rx="8"
+      fill="rgb(var(--surface))"
+      stroke="rgb(var(--ink))"
+      strokeWidth="1.5"
     />
     <path
-      d="M36.4 11.5c2.95 3.35 2.95 13.65 0 17"
+      d="M12 20 L20 12 L28 20"
       fill="none"
-      stroke="url(#clarion-mark)"
-      strokeWidth="1.2"
-      strokeLinecap="round"
-      opacity="0.36"
+      stroke="rgb(var(--ink))"
+      strokeWidth="2.4"
+      strokeLinecap="square"
+      strokeLinejoin="miter"
+    />
+    <path
+      d="M12 28 L20 20 L28 28"
+      fill="none"
+      stroke="rgb(var(--ink))"
+      strokeWidth="2.4"
+      strokeLinecap="square"
+      strokeLinejoin="miter"
     />
   </svg>
 );
 
 export const Wordmark = ({ className }: { className?: string }) => (
-  <span className={cn("text-[15px] font-semibold tracking-[-0.02em] text-ink", className)}>Clarion</span>
+  <span className={cn("text-[15px] font-semibold tracking-[-0.02em] text-ink", className)}>
+    Clarion
+  </span>
 );
