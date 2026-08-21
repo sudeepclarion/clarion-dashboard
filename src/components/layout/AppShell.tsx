@@ -166,7 +166,7 @@ export const AppShell = ({ state, isRefreshing, onRefresh, children }: AppShellP
   return (
     <div className="flex h-full">
       {/* Desktop sidebar */}
-      <aside className="hidden w-56 shrink-0 flex-col border-r border-hairline bg-base-900/50 lg:flex">
+      <aside className="hidden w-56 shrink-0 flex-col border-r border-hairline bg-base-900 lg:flex">
         <div className="flex h-14 items-center gap-2.5 border-b border-hairline px-4">
           <LogoMark className="h-7 w-7" />
           <Wordmark />

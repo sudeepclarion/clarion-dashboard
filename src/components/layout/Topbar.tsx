@@ -96,7 +96,7 @@ export const Topbar = ({ state, isRefreshing, onRefresh, onOpenNav, navIcon }: T
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-hairline bg-base-800/85 px-4 backdrop-blur-md sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-hairline bg-base-800 px-4 sm:px-6 lg:px-8">
       <button
         type="button"
         aria-label="Open navigation"
