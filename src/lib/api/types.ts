@@ -40,7 +40,8 @@ export interface Member {
   id: string;
   name: string;
   role: TeamRole | null;
-  functions: MemberFunction[];
+  /** Curated presets and/or freeform job functions for staffing. */
+  functions: string[];
   tags: string[];
   /** null = derive from role (manager → false). */
   acceptsWorkAssignments: boolean | null;

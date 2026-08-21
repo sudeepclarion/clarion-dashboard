@@ -51,7 +51,15 @@ const MemberRow = ({
   const functions = Array.isArray(member.functions) ? member.functions : [];
   const tags = Array.isArray(member.tags) ? member.tags : [];
   const [tagDraft, setTagDraft] = useState(tags.join(", "));
+  const [customFnDraft, setCustomFnDraft] = useState("");
   const staffable = effectiveStaffable(member);
+
+  const curatedOn = new Set(
+    functions.filter((f) => (MEMBER_FUNCTIONS as readonly string[]).includes(f.toLowerCase()))
+  );
+  const customFunctions = functions.filter(
+    (f) => !(MEMBER_FUNCTIONS as readonly string[]).includes(f.toLowerCase())
+  );
 
   const update = useDashboardMutation(
     (changes: {
@@ -64,8 +72,27 @@ const MemberRow = ({
   const remove = useDashboardMutation((id: string) => api.members.remove(id));
 
   const toggleFunction = (fn: MemberFunction) => {
-    const next = functions.includes(fn) ? functions.filter((f) => f !== fn) : [...functions, fn];
+    const key = fn.toLowerCase();
+    const without = functions.filter((f) => f.toLowerCase() !== key);
+    const next = curatedOn.has(fn) ? without : [...without, fn];
     update.mutate({ functions: next });
+  };
+
+  const addCustomFunction = () => {
+    const label = customFnDraft.trim();
+    if (!label) return;
+    if (functions.some((f) => f.toLowerCase() === label.toLowerCase())) {
+      setCustomFnDraft("");
+      return;
+    }
+    update.mutate({ functions: [...functions, label] });
+    setCustomFnDraft("");
+  };
+
+  const removeFunction = (label: string) => {
+    update.mutate({
+      functions: functions.filter((f) => f.toLowerCase() !== label.toLowerCase()),
+    });
   };
 
   const commitTags = () => {
@@ -126,7 +153,7 @@ const MemberRow = ({
         <p className="mb-1.5 text-2xs text-ink-faint">Job functions (staffing)</p>
         <div className="flex flex-wrap gap-1.5">
           {MEMBER_FUNCTIONS.map((fn) => {
-            const on = functions.includes(fn);
+            const on = curatedOn.has(fn);
             return (
               <button
                 key={fn}
@@ -143,9 +170,41 @@ const MemberRow = ({
               </button>
             );
           })}
+          {customFunctions.map((fn) => (
+            <button
+              key={fn}
+              type="button"
+              disabled={update.isPending}
+              onClick={() => removeFunction(fn)}
+              title="Click to remove"
+              className="rounded-md bg-violet-electric/15 px-2 py-0.5 text-2xs text-violet-electric ring-1 ring-violet-electric/30"
+            >
+              {fn} ×
+            </button>
+          ))}
         </div>
 
         <div className="mt-2 flex flex-wrap items-center gap-2">
+          <Input
+            value={customFnDraft}
+            onChange={(event) => setCustomFnDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                addCustomFunction();
+              }
+            }}
+            placeholder="Add custom function (e.g. collector)"
+            className="w-56"
+            aria-label={`Custom function for ${member.name}`}
+          />
+          <Button
+            variant="ghost"
+            disabled={!customFnDraft.trim() || update.isPending}
+            onClick={addCustomFunction}
+          >
+            Add
+          </Button>
           <Input
             value={tagDraft}
             onChange={(event) => setTagDraft(event.target.value)}
@@ -157,7 +216,7 @@ const MemberRow = ({
               }
             }}
             placeholder="Tags (comma-separated)"
-            className="w-56"
+            className="w-48"
             aria-label={`Tags for ${member.name}`}
           />
           <label className="inline-flex cursor-pointer items-center gap-1.5 text-2xs text-ink-muted">
