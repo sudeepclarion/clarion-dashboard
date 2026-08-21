@@ -37,7 +37,7 @@ function applyTheme(theme: ThemeMode) {
   const meta = document.querySelector('meta[name="color-scheme"]');
   meta?.setAttribute("content", theme);
   const themeColor = document.querySelector('meta[name="theme-color"]');
-  themeColor?.setAttribute("content", theme === "dark" ? "#000000" : "#FFFFFF");
+  themeColor?.setAttribute("content", theme === "dark" ? "#0B0F17" : "#FAFAFA");
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
