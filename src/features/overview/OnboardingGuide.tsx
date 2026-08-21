@@ -14,7 +14,7 @@ type Step = {
   done: (state: DashboardState) => boolean;
 };
 
-const steps = (state: DashboardState): Step[] => [
+const STEPS: Step[] = [
   {
     id: "team",
     title: "Add your team",
@@ -27,14 +27,14 @@ const steps = (state: DashboardState): Step[] => [
     title: "Connect messaging",
     description: "Link Slack so standups and incidents can read your channels.",
     href: "/settings",
-    done: (s) => Boolean(s.capabilities.messaging || s.capabilities.slack),
+    done: (s) => Boolean(s.integrations.capabilities.messaging || s.integrations.capabilities.slack),
   },
   {
     id: "tickets",
     title: "Connect tickets",
     description: "Optional — sync Jira or Linear so board work stays mirrored.",
     href: "/settings",
-    done: (s) => Boolean(s.capabilities.tickets || s.capabilities.jira),
+    done: (s) => Boolean(s.integrations.capabilities.tickets || s.integrations.capabilities.jira),
   },
   {
     id: "standup",
@@ -60,7 +60,7 @@ export const OnboardingGuide = ({ state }: { state: DashboardState }) => {
     }
   }, [forceOpen]);
 
-  const items = steps(state);
+  const items = STEPS;
   const allDone = items.every((step) => step.done(state));
   if (dismissed && !forceOpen) return null;
   if (allDone && !forceOpen) return null;

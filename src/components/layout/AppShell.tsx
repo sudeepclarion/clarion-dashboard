@@ -146,7 +146,7 @@ const SidebarFooter = ({ state }: { state?: DashboardState }) => (
     <p className="text-2xs text-ink-faint">
       Clarion AI
       <span className="ml-1.5 font-mono text-[10px] text-ink-muted">
-        {state?.capabilities.ai ? "ready" : "unavailable"}
+        {state?.integrations.capabilities.ai ? "ready" : "unavailable"}
       </span>
     </p>
   </div>
