@@ -43,6 +43,8 @@ export interface Member {
   /** Curated presets and/or freeform job functions for staffing. */
   functions: string[];
   tags: string[];
+  /** Repos this person maintains (owner/org/name strings). */
+  repos: string[];
   /** null = derive from role (manager → false). */
   acceptsWorkAssignments: boolean | null;
   createdAt: string;

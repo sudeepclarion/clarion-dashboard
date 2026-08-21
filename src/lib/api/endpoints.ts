@@ -139,6 +139,7 @@ export const api = {
         role?: TeamRole | string | null;
         functions?: string[];
         tags?: string[];
+        repos?: string[];
         acceptsWorkAssignments?: boolean | null;
       }
     ) => http.patch<Member>(`/members/${id}`, changes),

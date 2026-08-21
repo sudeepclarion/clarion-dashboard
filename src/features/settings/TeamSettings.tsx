@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Trash2, UserPlus, Users } from "lucide-react";
 import { api } from "@/lib/api/endpoints";
+import { queryKeys } from "@/lib/api/queryKeys";
 import {
   MEMBER_FUNCTIONS,
   type DashboardState,
@@ -43,15 +44,20 @@ const effectiveStaffable = (member: Member): boolean => {
 const MemberRow = ({
   member,
   openCount,
+  knownRepos,
 }: {
   member: Member;
   openCount: number;
+  knownRepos: string[];
 }) => {
   const teamRole: TeamRole = member.role === "manager" ? "manager" : "member";
   const functions = Array.isArray(member.functions) ? member.functions : [];
   const tags = Array.isArray(member.tags) ? member.tags : [];
+  const repos = Array.isArray(member.repos) ? member.repos : [];
   const [tagDraft, setTagDraft] = useState(tags.join(", "));
   const [customFnDraft, setCustomFnDraft] = useState("");
+  const [customRepoDraft, setCustomRepoDraft] = useState("");
+  const [repoFilter, setRepoFilter] = useState("");
   const staffable = effectiveStaffable(member);
 
   const curatedOn = new Set(
@@ -60,12 +66,14 @@ const MemberRow = ({
   const customFunctions = functions.filter(
     (f) => !(MEMBER_FUNCTIONS as readonly string[]).includes(f.toLowerCase())
   );
+  const repoSet = new Set(repos.map((r) => r.toLowerCase()));
 
   const update = useDashboardMutation(
     (changes: {
       role?: TeamRole;
       functions?: string[];
       tags?: string[];
+      repos?: string[];
       acceptsWorkAssignments?: boolean | null;
     }) => api.members.update(member.id, changes)
   );
@@ -95,6 +103,25 @@ const MemberRow = ({
     });
   };
 
+  const toggleRepo = (repo: string) => {
+    const key = repo.toLowerCase();
+    const next = repoSet.has(key)
+      ? repos.filter((r) => r.toLowerCase() !== key)
+      : [...repos, repo];
+    update.mutate({ repos: next });
+  };
+
+  const addCustomRepo = () => {
+    const label = customRepoDraft.trim().replace(/^https?:\/\/github\.com\//i, "").replace(/\.git$/i, "");
+    if (!label) return;
+    if (repos.some((r) => r.toLowerCase() === label.toLowerCase())) {
+      setCustomRepoDraft("");
+      return;
+    }
+    update.mutate({ repos: [...repos, label] });
+    setCustomRepoDraft("");
+  };
+
   const commitTags = () => {
     const next = tagDraft
       .split(",")
@@ -104,6 +131,17 @@ const MemberRow = ({
       next.length === tags.length && next.every((t, i) => t.toLowerCase() === tags[i]?.toLowerCase());
     if (!same) update.mutate({ tags: next });
   };
+
+  const filteredKnown = useMemo(() => {
+    const q = repoFilter.trim().toLowerCase();
+    const base = knownRepos.filter(Boolean);
+    const matched = q ? base.filter((r) => r.toLowerCase().includes(q)) : base;
+    // Always show already-selected repos even if not in catalog.
+    const selectedExtra = repos.filter(
+      (r) => !base.some((k) => k.toLowerCase() === r.toLowerCase())
+    );
+    return [...selectedExtra, ...matched].slice(0, 40);
+  }, [knownRepos, repoFilter, repos]);
 
   return (
     <li className="space-y-2.5 border-b border-hairline/60 py-3 last:border-b-0">
@@ -119,6 +157,11 @@ const MemberRow = ({
             ) : null}
             {!staffable ? (
               <Badge className="bg-base-800 text-ink-muted ring-hairline">Not staffed</Badge>
+            ) : null}
+            {repos.length ? (
+              <Badge className="bg-base-800 text-ink-muted ring-hairline">
+                {repos.length} repo{repos.length === 1 ? "" : "s"}
+              </Badge>
             ) : null}
           </div>
           <p className="text-2xs text-ink-faint">{openCount} open</p>
@@ -149,87 +192,149 @@ const MemberRow = ({
         </IconButton>
       </div>
 
-      <div className="pl-11">
-        <p className="mb-1.5 text-2xs text-ink-faint">Job functions (staffing)</p>
-        <div className="flex flex-wrap gap-1.5">
-          {MEMBER_FUNCTIONS.map((fn) => {
-            const on = curatedOn.has(fn);
-            return (
+      <div className="pl-11 space-y-3">
+        <div>
+          <p className="mb-1.5 text-2xs text-ink-faint">Job functions (staffing)</p>
+          <div className="flex flex-wrap gap-1.5">
+            {MEMBER_FUNCTIONS.map((fn) => {
+              const on = curatedOn.has(fn);
+              return (
+                <button
+                  key={fn}
+                  type="button"
+                  disabled={update.isPending}
+                  onClick={() => toggleFunction(fn)}
+                  className={
+                    on
+                      ? "rounded-md bg-cyan-clarion/15 px-2 py-0.5 text-2xs text-cyan-clarion ring-1 ring-cyan-clarion/30"
+                      : "rounded-md bg-base-900/60 px-2 py-0.5 text-2xs text-ink-muted ring-1 ring-hairline hover:text-ink"
+                  }
+                >
+                  {FUNCTION_LABELS[fn]}
+                </button>
+              );
+            })}
+            {customFunctions.map((fn) => (
               <button
                 key={fn}
                 type="button"
                 disabled={update.isPending}
-                onClick={() => toggleFunction(fn)}
-                className={
-                  on
-                    ? "rounded-md bg-cyan-clarion/15 px-2 py-0.5 text-2xs text-cyan-clarion ring-1 ring-cyan-clarion/30"
-                    : "rounded-md bg-base-900/60 px-2 py-0.5 text-2xs text-ink-muted ring-1 ring-hairline hover:text-ink"
-                }
+                onClick={() => removeFunction(fn)}
+                title="Click to remove"
+                className="rounded-md bg-violet-electric/15 px-2 py-0.5 text-2xs text-violet-electric ring-1 ring-violet-electric/30"
               >
-                {FUNCTION_LABELS[fn]}
+                {fn} ×
               </button>
-            );
-          })}
-          {customFunctions.map((fn) => (
-            <button
-              key={fn}
-              type="button"
-              disabled={update.isPending}
-              onClick={() => removeFunction(fn)}
-              title="Click to remove"
-              className="rounded-md bg-violet-electric/15 px-2 py-0.5 text-2xs text-violet-electric ring-1 ring-violet-electric/30"
+            ))}
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Input
+              value={customFnDraft}
+              onChange={(event) => setCustomFnDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  addCustomFunction();
+                }
+              }}
+              placeholder="Add custom function (e.g. collector)"
+              className="w-56"
+              aria-label={`Custom function for ${member.name}`}
+            />
+            <Button
+              variant="ghost"
+              disabled={!customFnDraft.trim() || update.isPending}
+              onClick={addCustomFunction}
             >
-              {fn} ×
-            </button>
-          ))}
+              Add
+            </Button>
+            <Input
+              value={tagDraft}
+              onChange={(event) => setTagDraft(event.target.value)}
+              onBlur={commitTags}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  commitTags();
+                }
+              }}
+              placeholder="Tags (comma-separated)"
+              className="w-48"
+              aria-label={`Tags for ${member.name}`}
+            />
+            <label className="inline-flex cursor-pointer items-center gap-1.5 text-2xs text-ink-muted">
+              <input
+                type="checkbox"
+                checked={staffable}
+                disabled={update.isPending}
+                onChange={(event) =>
+                  update.mutate({ acceptsWorkAssignments: event.target.checked })
+                }
+              />
+              Accepts work assignments
+            </label>
+          </div>
         </div>
 
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <Input
-            value={customFnDraft}
-            onChange={(event) => setCustomFnDraft(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                addCustomFunction();
-              }
-            }}
-            placeholder="Add custom function (e.g. collector)"
-            className="w-56"
-            aria-label={`Custom function for ${member.name}`}
-          />
-          <Button
-            variant="ghost"
-            disabled={!customFnDraft.trim() || update.isPending}
-            onClick={addCustomFunction}
-          >
-            Add
-          </Button>
-          <Input
-            value={tagDraft}
-            onChange={(event) => setTagDraft(event.target.value)}
-            onBlur={commitTags}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                commitTags();
-              }
-            }}
-            placeholder="Tags (comma-separated)"
-            className="w-48"
-            aria-label={`Tags for ${member.name}`}
-          />
-          <label className="inline-flex cursor-pointer items-center gap-1.5 text-2xs text-ink-muted">
-            <input
-              type="checkbox"
-              checked={staffable}
-              disabled={update.isPending}
-              onChange={(event) =>
-                update.mutate({ acceptsWorkAssignments: event.target.checked })
-              }
+        <div>
+          <p className="mb-1.5 text-2xs text-ink-faint">
+            Repos they maintain (staffing when work mentions a repo)
+          </p>
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <Input
+              value={repoFilter}
+              onChange={(event) => setRepoFilter(event.target.value)}
+              placeholder="Filter known repos…"
+              className="w-48"
+              aria-label={`Filter repos for ${member.name}`}
             />
-            Accepts work assignments
-          </label>
+            <Input
+              value={customRepoDraft}
+              onChange={(event) => setCustomRepoDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  addCustomRepo();
+                }
+              }}
+              placeholder="owner/repo if missing"
+              className="w-52"
+              aria-label={`Custom repo for ${member.name}`}
+            />
+            <Button
+              variant="ghost"
+              disabled={!customRepoDraft.trim() || update.isPending}
+              onClick={addCustomRepo}
+            >
+              Add repo
+            </Button>
+          </div>
+          <div className="flex max-h-28 flex-wrap gap-1.5 overflow-y-auto">
+            {filteredKnown.map((repo) => {
+              const on = repoSet.has(repo.toLowerCase());
+              return (
+                <button
+                  key={repo}
+                  type="button"
+                  disabled={update.isPending}
+                  onClick={() => toggleRepo(repo)}
+                  className={
+                    on
+                      ? "rounded-md bg-cyan-clarion/15 px-2 py-0.5 font-mono text-2xs text-cyan-clarion ring-1 ring-cyan-clarion/30"
+                      : "rounded-md bg-base-900/60 px-2 py-0.5 font-mono text-2xs text-ink-muted ring-1 ring-hairline hover:text-ink"
+                  }
+                >
+                  {repo}
+                  {on ? " ×" : ""}
+                </button>
+              );
+            })}
+            {!filteredKnown.length ? (
+              <p className="text-2xs text-ink-faint">
+                No repos listed — connect GitHub under Integrations, or type owner/repo above.
+              </p>
+            ) : null}
+          </div>
         </div>
       </div>
       {update.error ? (
@@ -249,12 +354,33 @@ export const TeamSettings = ({ state }: { state: DashboardState }) => {
   const [filter, setFilter] = useState("");
   const teamId = getActiveTeamId();
   const slackReady = state.integrations.capabilities.slack;
+  const githubReady = state.integrations.capabilities.github;
 
   const directory = useQuery({
     queryKey: ["teams", "slack-directory"],
     queryFn: () => api.teams.slackDirectory(),
     enabled: slackReady,
   });
+
+  const githubCatalog = useQuery({
+    queryKey: queryKeys.githubCatalog,
+    queryFn: () => api.integrations.github.catalog(),
+    enabled: githubReady,
+  });
+
+  const knownRepos = useMemo(() => {
+    const fromCatalog = (githubCatalog.data ?? []).map((r) => r.fullName).filter(Boolean);
+    const fromState = (state.integrations.github.repos ?? []).map((r) => r.repo).filter(Boolean);
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const repo of [...fromCatalog, ...fromState]) {
+      const key = repo.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(repo);
+    }
+    return out.sort((a, b) => a.localeCompare(b));
+  }, [githubCatalog.data, state.integrations.github.repos]);
 
   const add = useDashboardMutation(() => api.members.add(name.trim(), role), {
     onSuccess: () => {
@@ -311,7 +437,7 @@ export const TeamSettings = ({ state }: { state: DashboardState }) => {
       <Panel>
         <PanelHeader
           title="Team workspace"
-          description="Clarion role (Member/Manager) controls approvals and Slack auth. Job functions + tags control who Decider/Working staff onto tickets."
+          description="Clarion role (Member/Manager) controls approvals and Slack auth. Job functions, tags, and repos control who Decider/Working staff onto tickets."
         />
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -358,6 +484,7 @@ export const TeamSettings = ({ state }: { state: DashboardState }) => {
               key={member.id}
               member={member}
               openCount={openCounts.get(member.name) ?? 0}
+              knownRepos={knownRepos}
             />
           ))}
           {!state.members.length ? (
