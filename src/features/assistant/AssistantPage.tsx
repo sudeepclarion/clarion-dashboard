@@ -37,7 +37,7 @@ const sendAndWait = async (message: string): Promise<ChatJob> => {
 };
 
 const CAPABILITY_LABELS: Array<{ key: keyof Capabilities; label: string }> = [
-  { key: "ai", label: "Reasoning model" },
+  { key: "ai", label: "Clarion AI" },
   { key: "jira", label: "Jira tickets" },
   { key: "jiraBoard", label: "Jira board sync" },
   { key: "slack", label: "Slack channels" },

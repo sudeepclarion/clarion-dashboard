@@ -1,4 +1,4 @@
-import { http, loginRequest } from "./http";
+import { http, loginRequest, signupRequest } from "./http";
 import type {
   ActivityEntry,
   AvailableMeeting,
@@ -70,6 +70,12 @@ export interface SlackDirectoryUser {
 export interface LoginResult {
   token: string;
   user: AuthUser;
+  trialEndsAt?: string | null;
+}
+
+export interface SignupResult extends LoginResult {
+  org: { id: string; name: string; slug: string };
+  trialEndsAt: string;
 }
 
 /**
@@ -79,6 +85,8 @@ export interface LoginResult {
 export const api = {
   auth: {
     login: (email: string, password: string) => loginRequest<LoginResult>(email, password),
+    signup: (name: string, email: string, password: string) =>
+      signupRequest<SignupResult>(name, email, password),
     me: () => http.get<AuthUser>("/auth/me"),
   },
 

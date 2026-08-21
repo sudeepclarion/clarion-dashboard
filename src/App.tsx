@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { LoginPage } from "@/features/auth/LoginPage";
+import { SignupPage } from "@/features/auth/SignupPage";
 import { RequireAuth } from "@/features/auth/RequireAuth";
 import { useDashboard } from "@/lib/hooks/useDashboard";
 import { AssistantPage } from "@/features/assistant/AssistantPage";
@@ -84,6 +85,7 @@ const DashboardApp = () => {
 export const App = () => (
   <Routes>
     <Route path="/login" element={<LoginPage />} />
+    <Route path="/signup" element={<SignupPage />} />
     <Route
       path="/*"
       element={

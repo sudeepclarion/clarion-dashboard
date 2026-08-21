@@ -45,7 +45,8 @@ const authHeaders = (): Record<string, string> => {
 const redirectToLogin = (): void => {
   clearSessionToken();
   clearActiveTeamId();
-  if (window.location.pathname !== "/login") {
+  const path = window.location.pathname;
+  if (path !== "/login" && path !== "/signup") {
     window.location.assign("/login");
   }
 };
@@ -127,6 +128,41 @@ export const loginRequest = async <T>(email: string, password: string): Promise<
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
+    });
+  } catch {
+    throw new ApiError(
+      `Cannot reach the Clarion API at ${API_ROOT}. Is the backend running?`,
+      0,
+      "network_error"
+    );
+  }
+
+  const payload = (await response.json().catch(() => null)) as Envelope<T> | null;
+
+  if (!response.ok || payload?.error) {
+    throw new ApiError(
+      payload?.error?.message ?? `Request failed (${response.status})`,
+      response.status,
+      payload?.error?.code ?? "request_failed"
+    );
+  }
+
+  return payload?.data as T;
+};
+
+/** Signup mirrors login — no Bearer, no 401 redirect to login. */
+export const signupRequest = async <T>(
+  name: string,
+  email: string,
+  password: string
+): Promise<T> => {
+  let response: Response;
+  const url = `${API_ROOT}/auth/signup`;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
     });
   } catch {
     throw new ApiError(

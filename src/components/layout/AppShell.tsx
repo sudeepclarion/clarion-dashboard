@@ -144,11 +144,10 @@ const NavLinks = ({ state, onNavigate }: { state?: DashboardState; onNavigate?: 
 const SidebarFooter = ({ state }: { state?: DashboardState }) => (
   <div className="border-t border-hairline px-4 py-3">
     <p className="text-2xs text-ink-faint">
-      Reasoning model
-      <span className="ml-1.5 font-mono text-[10px] text-ink-muted">{state?.ai.model ?? "—"}</span>
-    </p>
-    <p className="mt-0.5 text-2xs text-ink-faint">
-      Effort <span className="font-mono text-[10px] text-ink-muted">{state?.ai.effort ?? "—"}</span>
+      Clarion AI
+      <span className="ml-1.5 font-mono text-[10px] text-ink-muted">
+        {state?.capabilities.ai ? "ready" : "unavailable"}
+      </span>
     </p>
   </div>
 );

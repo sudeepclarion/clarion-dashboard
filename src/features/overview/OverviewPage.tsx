@@ -22,6 +22,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StatCard } from "@/components/ui/StatCard";
 import { TaskStatusPill } from "@/components/ui/StatusPill";
 import { DataTable } from "@/components/ui/Table";
+import { OnboardingGuide } from "./OnboardingGuide";
 
 const ATTENTION_LIMIT = 8;
 
@@ -173,6 +174,10 @@ export const OverviewPage = ({ state }: { state: DashboardState }) => {
         title="Overview"
         description="Where the team stands right now, and what needs you today."
       />
+
+      <div className="mb-4">
+        <OnboardingGuide state={state} />
+      </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard

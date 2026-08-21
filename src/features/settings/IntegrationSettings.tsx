@@ -4,7 +4,7 @@ import type { CategoryStatus, DashboardState } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { relativeTime } from "@/lib/format/dates";
 import { useDashboardMutation } from "@/lib/hooks/useDashboard";
-import { Badge, Dot } from "@/components/ui/Badge";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Callout } from "@/components/ui/Callout";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
@@ -131,27 +131,6 @@ export const IntegrationSettings = ({ state }: { state: DashboardState }) => {
               {category.label}
             </Badge>
           ))}
-        </div>
-      </Panel>
-
-      {/* The model is not an integration category, but it gates most features. */}
-      <Panel>
-        <PanelHeader
-          title="Reasoning model"
-          description={`Powers standup parsing, meeting extraction, reports, client views, incident analysis and the assistant. Currently ${state.ai.model} at ${state.ai.effort} effort.`}
-        />
-        <div className="mt-2 flex items-center gap-2">
-          <Dot className={capabilities.ai ? "bg-signal-positive" : "bg-ink-faint/40"} />
-          <span className="text-xs text-ink-muted">
-            {capabilities.ai ? (
-              "connected"
-            ) : (
-              <>
-                not configured — set <code className="font-mono text-[10px]">ANTHROPIC_API_KEY</code> in the
-                backend environment and restart it.
-              </>
-            )}
-          </span>
         </div>
       </Panel>
 
