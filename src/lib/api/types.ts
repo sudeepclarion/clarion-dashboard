@@ -15,10 +15,35 @@ export type ChangeSource =
 
 export type TeamRole = "manager" | "member";
 
+export type MemberFunction =
+  | "app"
+  | "backend"
+  | "mobile"
+  | "sdk"
+  | "reports"
+  | "qa"
+  | "product"
+  | "devops";
+
+export const MEMBER_FUNCTIONS: readonly MemberFunction[] = [
+  "app",
+  "backend",
+  "mobile",
+  "sdk",
+  "reports",
+  "qa",
+  "product",
+  "devops",
+] as const;
+
 export interface Member {
   id: string;
   name: string;
   role: TeamRole | null;
+  functions: MemberFunction[];
+  tags: string[];
+  /** null = derive from role (manager → false). */
+  acceptsWorkAssignments: boolean | null;
   createdAt: string;
 }
 

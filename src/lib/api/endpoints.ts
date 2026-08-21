@@ -132,8 +132,16 @@ export const api = {
   members: {
     list: () => http.get<MemberStats[]>("/members"),
     add: (name: string, role?: TeamRole | string) => http.post<Member>("/members", { name, role }),
-    update: (id: string, changes: { name?: string; role?: TeamRole | string | null }) =>
-      http.patch<Member>(`/members/${id}`, changes),
+    update: (
+      id: string,
+      changes: {
+        name?: string;
+        role?: TeamRole | string | null;
+        functions?: string[];
+        tags?: string[];
+        acceptsWorkAssignments?: boolean | null;
+      }
+    ) => http.patch<Member>(`/members/${id}`, changes),
     remove: (id: string) => http.delete<void>(`/members/${id}`),
     refreshSummaries: () => http.post<Record<string, MemberSummary>>("/members/summaries"),
   },

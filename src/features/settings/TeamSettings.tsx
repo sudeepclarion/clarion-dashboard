@@ -3,7 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Trash2, UserPlus, Users } from "lucide-react";
 import { api } from "@/lib/api/endpoints";
-import type { DashboardState, TeamRole } from "@/lib/api/types";
+import {
+  MEMBER_FUNCTIONS,
+  type DashboardState,
+  type Member,
+  type MemberFunction,
+  type TeamRole,
+} from "@/lib/api/types";
 import { getActiveTeamId } from "@/lib/auth";
 import { useDashboardMutation } from "@/lib/hooks/useDashboard";
 import { Avatar } from "@/components/ui/Avatar";
@@ -17,6 +23,164 @@ const ROLE_OPTIONS: Array<{ value: TeamRole; label: string }> = [
   { value: "member", label: "Member" },
   { value: "manager", label: "Manager" },
 ];
+
+const FUNCTION_LABELS: Record<MemberFunction, string> = {
+  app: "App",
+  backend: "Backend",
+  mobile: "Mobile",
+  sdk: "SDK",
+  reports: "Reports",
+  qa: "QA",
+  product: "Product",
+  devops: "DevOps",
+};
+
+const effectiveStaffable = (member: Member): boolean => {
+  if (typeof member.acceptsWorkAssignments === "boolean") return member.acceptsWorkAssignments;
+  return member.role !== "manager";
+};
+
+const MemberRow = ({
+  member,
+  openCount,
+}: {
+  member: Member;
+  openCount: number;
+}) => {
+  const teamRole: TeamRole = member.role === "manager" ? "manager" : "member";
+  const functions = Array.isArray(member.functions) ? member.functions : [];
+  const tags = Array.isArray(member.tags) ? member.tags : [];
+  const [tagDraft, setTagDraft] = useState(tags.join(", "));
+  const staffable = effectiveStaffable(member);
+
+  const update = useDashboardMutation(
+    (changes: {
+      role?: TeamRole;
+      functions?: string[];
+      tags?: string[];
+      acceptsWorkAssignments?: boolean | null;
+    }) => api.members.update(member.id, changes)
+  );
+  const remove = useDashboardMutation((id: string) => api.members.remove(id));
+
+  const toggleFunction = (fn: MemberFunction) => {
+    const next = functions.includes(fn) ? functions.filter((f) => f !== fn) : [...functions, fn];
+    update.mutate({ functions: next });
+  };
+
+  const commitTags = () => {
+    const next = tagDraft
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    const same =
+      next.length === tags.length && next.every((t, i) => t.toLowerCase() === tags[i]?.toLowerCase());
+    if (!same) update.mutate({ tags: next });
+  };
+
+  return (
+    <li className="space-y-2.5 border-b border-hairline/60 py-3 last:border-b-0">
+      <div className="flex items-center gap-3">
+        <Avatar name={member.name} size="sm" />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="truncate text-xs font-medium text-ink">{member.name}</p>
+            {teamRole === "manager" ? (
+              <Badge className="bg-cyan-clarion/10 text-cyan-clarion ring-cyan-clarion/25">
+                Manager
+              </Badge>
+            ) : null}
+            {!staffable ? (
+              <Badge className="bg-base-800 text-ink-muted ring-hairline">Not staffed</Badge>
+            ) : null}
+          </div>
+          <p className="text-2xs text-ink-faint">{openCount} open</p>
+        </div>
+        <Select
+          value={teamRole}
+          disabled={update.isPending}
+          onChange={(event) => update.mutate({ role: event.target.value as TeamRole })}
+          className="w-32"
+          aria-label={`Clarion role for ${member.name}`}
+        >
+          {ROLE_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </Select>
+        <IconButton
+          label={`Remove ${member.name}`}
+          variant="danger"
+          onClick={() => {
+            if (window.confirm(`Remove ${member.name}? Their tasks stay on the board.`)) {
+              remove.mutate(member.id);
+            }
+          }}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </IconButton>
+      </div>
+
+      <div className="pl-11">
+        <p className="mb-1.5 text-2xs text-ink-faint">Job functions (staffing)</p>
+        <div className="flex flex-wrap gap-1.5">
+          {MEMBER_FUNCTIONS.map((fn) => {
+            const on = functions.includes(fn);
+            return (
+              <button
+                key={fn}
+                type="button"
+                disabled={update.isPending}
+                onClick={() => toggleFunction(fn)}
+                className={
+                  on
+                    ? "rounded-md bg-cyan-clarion/15 px-2 py-0.5 text-2xs text-cyan-clarion ring-1 ring-cyan-clarion/30"
+                    : "rounded-md bg-base-900/60 px-2 py-0.5 text-2xs text-ink-muted ring-1 ring-hairline hover:text-ink"
+                }
+              >
+                {FUNCTION_LABELS[fn]}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <Input
+            value={tagDraft}
+            onChange={(event) => setTagDraft(event.target.value)}
+            onBlur={commitTags}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                commitTags();
+              }
+            }}
+            placeholder="Tags (comma-separated)"
+            className="w-56"
+            aria-label={`Tags for ${member.name}`}
+          />
+          <label className="inline-flex cursor-pointer items-center gap-1.5 text-2xs text-ink-muted">
+            <input
+              type="checkbox"
+              checked={staffable}
+              disabled={update.isPending}
+              onChange={(event) =>
+                update.mutate({ acceptsWorkAssignments: event.target.checked })
+              }
+            />
+            Accepts work assignments
+          </label>
+        </div>
+      </div>
+      {update.error ? (
+        <Callout tone="error" className="ml-11">
+          {update.error.message}
+        </Callout>
+      ) : null}
+    </li>
+  );
+};
 
 export const TeamSettings = ({ state }: { state: DashboardState }) => {
   const [name, setName] = useState("");
@@ -39,10 +203,6 @@ export const TeamSettings = ({ state }: { state: DashboardState }) => {
       setRole("member");
     },
   });
-  const updateRole = useDashboardMutation(
-    ({ id, next }: { id: string; next: TeamRole }) => api.members.update(id, { role: next })
-  );
-  const remove = useDashboardMutation((id: string) => api.members.remove(id));
   const addFromSlack = useDashboardMutation(
     () => {
       if (!teamId) throw new Error("No active team");
@@ -92,7 +252,7 @@ export const TeamSettings = ({ state }: { state: DashboardState }) => {
       <Panel>
         <PanelHeader
           title="Team workspace"
-          description="Each Clarion team is its own board, triage, and reports. Membership is not the whole Jira project — only people you add here."
+          description="Clarion role (Member/Manager) controls approvals and Slack auth. Job functions + tags control who Decider/Working staff onto tickets."
         />
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -133,52 +293,14 @@ export const TeamSettings = ({ state }: { state: DashboardState }) => {
           </Callout>
         ) : null}
 
-        <ul className="mt-4 divide-y divide-hairline/60">
-          {state.members.map((member) => {
-            const teamRole: TeamRole = member.role === "manager" ? "manager" : "member";
-            return (
-              <li key={member.id} className="flex items-center gap-3 py-2.5">
-                <Avatar name={member.name} size="sm" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate text-xs font-medium text-ink">{member.name}</p>
-                    {teamRole === "manager" ? (
-                      <Badge className="bg-cyan-clarion/10 text-cyan-clarion ring-cyan-clarion/25">
-                        Manager
-                      </Badge>
-                    ) : null}
-                  </div>
-                  <p className="text-2xs text-ink-faint">{openCounts.get(member.name) ?? 0} open</p>
-                </div>
-                <Select
-                  value={teamRole}
-                  disabled={updateRole.isPending}
-                  onChange={(event) =>
-                    updateRole.mutate({ id: member.id, next: event.target.value as TeamRole })
-                  }
-                  className="w-32"
-                  aria-label={`Role for ${member.name}`}
-                >
-                  {ROLE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Select>
-                <IconButton
-                  label={`Remove ${member.name}`}
-                  variant="danger"
-                  onClick={() => {
-                    if (window.confirm(`Remove ${member.name}? Their tasks stay on the board.`)) {
-                      remove.mutate(member.id);
-                    }
-                  }}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </IconButton>
-              </li>
-            );
-          })}
+        <ul className="mt-4">
+          {state.members.map((member) => (
+            <MemberRow
+              key={member.id}
+              member={member}
+              openCount={openCounts.get(member.name) ?? 0}
+            />
+          ))}
           {!state.members.length ? (
             <li className="py-6 text-center text-xs text-ink-faint">No members yet.</li>
           ) : null}

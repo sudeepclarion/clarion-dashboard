@@ -74,6 +74,11 @@ const PersonCard = ({ name, state }: { name: string; state: DashboardState }) =>
             {member?.role === "manager" ? (
               <Badge className="bg-cyan-clarion/10 text-cyan-clarion ring-cyan-clarion/25">Manager</Badge>
             ) : null}
+            {(member?.functions ?? []).slice(0, 3).map((fn) => (
+              <Badge key={fn} className="bg-base-800 text-ink-muted ring-hairline">
+                {fn}
+              </Badge>
+            ))}
             {summary ? <HealthPill health={summary.health} /> : null}
           </div>
         </div>
