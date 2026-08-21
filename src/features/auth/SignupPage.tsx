@@ -8,8 +8,7 @@ import { api } from "@/lib/api/endpoints";
 import { ApiError } from "@/lib/api/http";
 import { clearActiveTeamId, setSessionToken } from "@/lib/auth";
 
-const FREE_HINT =
-  "Use your company email (not Gmail, Yahoo, Outlook, etc.). Your organization is created from the email domain.";
+const FREE_HINT = "Use your company email (not Gmail, Yahoo, Outlook, etc.).";
 
 const previewFromEmail = (email: string): string | null => {
   const at = email.lastIndexOf("@");
