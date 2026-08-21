@@ -176,8 +176,9 @@ export const AgentSettings = ({ state }: { state: DashboardState }) => {
           Auto approve on timeout
         </label>
         <p className="mt-1 text-2xs text-ink-faint">
-          If a manager does not approve/reject Decide proposals, auto-approve them after the timeout
-          below (pending_auth only — not pushback/upline).
+          Off by default. When on: if a manager does not approve/reject Decide proposals, Clarion
+          auto-approves after the timeout below (pending_auth only — not pushback/upline) and DMs
+          managers with what was executed.
         </p>
         {cfg.reminderPolicy?.autoApproveOnTimeout ? (
           <div className="mt-3 max-w-xs">
