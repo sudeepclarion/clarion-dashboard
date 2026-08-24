@@ -79,6 +79,11 @@ export const AgentSettings = ({ state }: { state: DashboardState }) => {
       slackChannelAllowlist: [],
       standupPostChannelIds: cfg.standupPostChannelIds ?? [],
       uplineMemberIds: cfg.uplineMemberIds ?? [],
+      branding: {
+        name: (cfg.branding?.name ?? "").trim(),
+        primaryColor: (cfg.branding?.primaryColor ?? "#0B3D91").trim(),
+        accentColor: (cfg.branding?.accentColor ?? "#00A89D").trim(),
+      },
       reminderPolicy: {
         remindPendingAuthHours: cfg.reminderPolicy?.remindPendingAuthHours ?? 24,
         autoApproveOnTimeout: Boolean(cfg.reminderPolicy?.autoApproveOnTimeout),
@@ -202,6 +207,79 @@ export const AgentSettings = ({ state }: { state: DashboardState }) => {
             />
           </div>
         ) : null}
+      </Panel>
+
+      <Panel>
+        <PanelHeader
+          title="Outbound brand"
+          description="Name and colors on Slack footers and PDF reports. This is your company brand — not Clarion."
+        />
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <div className="sm:col-span-1">
+            <label className="text-2xs text-ink-faint">Brand name</label>
+            <Input
+              className="mt-1"
+              value={cfg.branding?.name ?? ""}
+              onChange={(e) =>
+                setDraft({
+                  ...cfg,
+                  branding: {
+                    name: e.target.value,
+                    primaryColor: cfg.branding?.primaryColor ?? "#0B3D91",
+                    accentColor: cfg.branding?.accentColor ?? "#00A89D",
+                  },
+                })
+              }
+              placeholder="AbleCredit"
+            />
+          </div>
+          <div>
+            <label className="text-2xs text-ink-faint">Primary color</label>
+            <Input
+              className="mt-1"
+              value={cfg.branding?.primaryColor ?? "#0B3D91"}
+              onChange={(e) =>
+                setDraft({
+                  ...cfg,
+                  branding: {
+                    name: cfg.branding?.name ?? "",
+                    primaryColor: e.target.value,
+                    accentColor: cfg.branding?.accentColor ?? "#00A89D",
+                  },
+                })
+              }
+              placeholder="#0B3D91"
+            />
+          </div>
+          <div>
+            <label className="text-2xs text-ink-faint">Accent color</label>
+            <Input
+              className="mt-1"
+              value={cfg.branding?.accentColor ?? "#00A89D"}
+              onChange={(e) =>
+                setDraft({
+                  ...cfg,
+                  branding: {
+                    name: cfg.branding?.name ?? "",
+                    primaryColor: cfg.branding?.primaryColor ?? "#0B3D91",
+                    accentColor: e.target.value,
+                  },
+                })
+              }
+              placeholder="#00A89D"
+            />
+          </div>
+        </div>
+        <div
+          className="mt-3 flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium text-white"
+          style={{
+            background: `linear-gradient(90deg, ${cfg.branding?.primaryColor || "#0B3D91"}, ${
+              cfg.branding?.accentColor || "#00A89D"
+            })`,
+          }}
+        >
+          {(cfg.branding?.name || "Your brand").trim()} · report preview
+        </div>
       </Panel>
 
       <Panel>

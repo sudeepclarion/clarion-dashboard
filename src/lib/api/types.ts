@@ -492,6 +492,11 @@ export interface OrgAgentConfig {
   reposInScope: string[];
   deciderPingRoles: string[];
   uplineMemberIds: string[];
+  branding?: {
+    name: string;
+    primaryColor: string;
+    accentColor: string;
+  };
   reminderPolicy: {
     remindPendingAuthHours: number;
     autoApproveOnTimeout: boolean;
